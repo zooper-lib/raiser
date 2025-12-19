@@ -5,9 +5,8 @@
     - Create `lib/src/events/`, `lib/src/handlers/`, `lib/src/bus/` directories
     - Update `lib/raiser.dart` to export public API
     - _Requirements: All_
-  - [x] 1.2 Add glados dependency and configure test setup
-    - Add `glados` to dev_dependencies in pubspec.yaml
-    - Create `test/generators/test_generators.dart` for custom generators
+  - [x] 1.2 Configure test setup
+    - Ensure `test` package is in dev_dependencies in pubspec.yaml
     - _Requirements: All_
 
 - [x] 2. Implement DomainEvent base class
@@ -39,37 +38,37 @@
     - Ensure cancel is idempotent (calling twice has no additional effect)
     - _Requirements: 3.4, 3.7_
 
-- [ ] 4. Implement core EventBus functionality
-  - [ ] 4.1 Create EventBus class with handler storage
+- [x] 4. Implement core EventBus functionality
+  - [x] 4.1 Create EventBus class with handler storage
     - Implement internal `_HandlerEntry` class with priority and registration order
     - Implement type-based handler map storage
     - _Requirements: 3.1, 6.1_
-  - [ ] 4.2 Implement register() method for class-based handlers
+  - [x] 4.2 Implement register() method for class-based handlers
     - Accept `EventHandler<T>` and optional priority
     - Return Subscription for cancellation
     - _Requirements: 3.1, 3.7, 4.1_
-  - [ ] 4.3 Implement on() method for function handlers
+  - [x] 4.3 Implement on() method for function handlers
     - Accept `Future<void> Function(T)` and optional priority
     - Return Subscription for cancellation
     - _Requirements: 3.1, 3.7, 4.2_
-  - [ ] 4.4 Write property test for Registration Style Equivalence
+  - [x] 4.4 Write property test for Registration Style Equivalence
     - **Property 7: Registration Style Equivalence**
     - **Validates: Requirements 4.1, 4.2**
-  - [ ] 4.5 Implement publish() method with basic routing
+  - [x] 4.5 Implement publish() method with basic routing
     - Route events to handlers by runtime type
     - Await all handler completions
     - _Requirements: 3.2, 3.3, 5.1, 5.2_
-  - [ ] 4.6 Write property test for Handler Registration and Invocation
+  - [x] 4.6 Write property test for Handler Registration and Invocation
     - **Property 4: Handler Registration and Invocation**
     - **Validates: Requirements 3.1, 3.2, 3.5, 3.7**
-  - [ ] 4.7 Write property test for Async Handler Completion
+  - [x] 4.7 Write property test for Async Handler Completion
     - **Property 6: Async Handler Completion**
     - **Validates: Requirements 3.3**
-  - [ ] 4.8 Write property test for Custom Event Type Routing
+  - [x] 4.8 Write property test for Custom Event Type Routing
     - **Property 8: Custom Event Type Routing**
     - **Validates: Requirements 5.1, 5.2**
 
-- [ ] 5. Checkpoint - Ensure all tests pass
+- [x] 5. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 6. Implement subscription cancellation

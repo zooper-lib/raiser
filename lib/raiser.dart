@@ -15,6 +15,4 @@ export 'src/handlers/event_handler.dart';
 export 'src/handlers/subscription.dart';
 
 // Event bus
-// export 'src/bus/event_bus.dart';
-// export 'src/bus/error_strategy.dart';
-// export 'src/bus/aggregate_exception.dart';
+export 'src/bus/event_bus.dart';

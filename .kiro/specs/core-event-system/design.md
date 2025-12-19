@@ -296,34 +296,30 @@ Type mismatches are prevented at compile time through generics. Runtime type mat
 
 ## Testing Strategy
 
-### Property-Based Testing Library
+### Testing Framework
 
-The implementation will use the `glados` package for property-based testing in Dart. This library provides:
-- Arbitrary generators for primitive and custom types
-- Shrinking for minimal failing examples
-- Configurable iteration counts
-
-Each property test will run a minimum of 100 iterations.
+The implementation uses Dart's standard `test` package for unit testing. Tests verify correctness properties through representative test cases covering various scenarios.
 
 ### Unit Tests
 
-Unit tests will cover:
+Unit tests cover:
 - Basic instantiation and default values
 - Edge cases (empty handlers, null aggregate IDs)
 - Integration between components
 - Error message formatting
+- Multiple representative inputs for each property
 
-### Property-Based Tests
+### Property Tests
 
-Each correctness property will be implemented as a property-based test with explicit annotation:
+Each correctness property is implemented as a test with explicit annotation:
 
 ```dart
 // **Feature: core-event-system, Property 1: Event ID Uniqueness**
-test('all event IDs are unique', () {
-  Glados<List<TestEvent>>().test((events) {
-    final ids = events.map((e) => e.id).toSet();
-    expect(ids.length, equals(events.length));
-  });
+// **Validates: Requirements 1.1**
+test('Property 1: all event IDs are unique across multiple instances', () {
+  final events = List.generate(100, (_) => TestEvent(name: 'test'));
+  final ids = events.map((e) => e.id).toSet();
+  expect(ids.length, equals(events.length));
 });
 ```
 
@@ -335,15 +331,5 @@ test/
 ├── event_handler_test.dart     # EventHandler interface tests
 ├── event_bus_test.dart         # EventBus unit + property tests
 ├── subscription_test.dart      # Subscription behavior tests
-├── error_handling_test.dart    # Error strategy property tests
-└── generators/
-    └── test_generators.dart    # Custom Glados generators
+└── error_handling_test.dart    # Error strategy tests
 ```
-
-### Custom Generators
-
-Property tests require generators for:
-- Random event instances with varying metadata
-- Lists of handlers with random priorities
-- Random error-throwing handlers
-- Random subscription sequences (register/cancel)
