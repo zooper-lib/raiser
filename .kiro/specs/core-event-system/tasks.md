@@ -1,0 +1,127 @@
+# Implementation Plan
+
+- [ ] 1. Set up project structure and testing infrastructure
+  - [ ] 1.1 Create directory structure for source files
+    - Create `lib/src/events/`, `lib/src/handlers/`, `lib/src/bus/` directories
+    - Update `lib/raiser.dart` to export public API
+    - _Requirements: All_
+  - [ ] 1.2 Add glados dependency and configure test setup
+    - Add `glados` to dev_dependencies in pubspec.yaml
+    - Create `test/generators/test_generators.dart` for custom generators
+    - _Requirements: All_
+
+- [ ] 2. Implement DomainEvent base class
+  - [ ] 2.1 Create DomainEvent abstract class with metadata
+    - Implement `id`, `timestamp`, `aggregateId` fields
+    - Implement unique ID generation using UUID or similar
+    - Implement `toMetadataMap()` method
+    - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
+  - [ ] 2.2 Write property test for Event ID Uniqueness
+    - **Property 1: Event ID Uniqueness**
+    - **Validates: Requirements 1.1**
+  - [ ] 2.3 Write property test for Aggregate ID Preservation
+    - **Property 3: Aggregate ID Preservation**
+    - **Validates: Requirements 1.3**
+  - [ ] 2.4 Implement concrete test event class and fromMetadataMap
+    - Create a concrete DomainEvent subclass for testing round-trip
+    - Implement `fromMetadataMap()` reconstruction
+    - _Requirements: 1.6_
+  - [ ] 2.5 Write property test for Event Metadata Round-Trip
+    - **Property 2: Event Metadata Round-Trip**
+    - **Validates: Requirements 1.5, 1.6**
+
+- [ ] 3. Implement EventHandler interface and Subscription
+  - [ ] 3.1 Create EventHandler abstract class
+    - Define generic `EventHandler<T>` with `Future<void> handle(T event)` method
+    - _Requirements: 2.1, 2.2, 2.3_
+  - [ ] 3.2 Create Subscription class
+    - Implement `cancel()` method and `isCancelled` getter
+    - Ensure cancel is idempotent (calling twice has no additional effect)
+    - _Requirements: 3.4, 3.7_
+
+- [ ] 4. Implement core EventBus functionality
+  - [ ] 4.1 Create EventBus class with handler storage
+    - Implement internal `_HandlerEntry` class with priority and registration order
+    - Implement type-based handler map storage
+    - _Requirements: 3.1, 6.1_
+  - [ ] 4.2 Implement register() method for class-based handlers
+    - Accept `EventHandler<T>` and optional priority
+    - Return Subscription for cancellation
+    - _Requirements: 3.1, 3.7, 4.1_
+  - [ ] 4.3 Implement on() method for function handlers
+    - Accept `Future<void> Function(T)` and optional priority
+    - Return Subscription for cancellation
+    - _Requirements: 3.1, 3.7, 4.2_
+  - [ ] 4.4 Write property test for Registration Style Equivalence
+    - **Property 7: Registration Style Equivalence**
+    - **Validates: Requirements 4.1, 4.2**
+  - [ ] 4.5 Implement publish() method with basic routing
+    - Route events to handlers by runtime type
+    - Await all handler completions
+    - _Requirements: 3.2, 3.3, 5.1, 5.2_
+  - [ ] 4.6 Write property test for Handler Registration and Invocation
+    - **Property 4: Handler Registration and Invocation**
+    - **Validates: Requirements 3.1, 3.2, 3.5, 3.7**
+  - [ ] 4.7 Write property test for Async Handler Completion
+    - **Property 6: Async Handler Completion**
+    - **Validates: Requirements 3.3**
+  - [ ] 4.8 Write property test for Custom Event Type Routing
+    - **Property 8: Custom Event Type Routing**
+    - **Validates: Requirements 5.1, 5.2**
+
+- [ ] 5. Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [ ] 6. Implement subscription cancellation
+  - [ ] 6.1 Wire Subscription.cancel() to remove handler from EventBus
+    - Implement removal logic in EventBus
+    - Ensure cancelled handlers are not invoked on subsequent publishes
+    - _Requirements: 3.4_
+  - [ ] 6.2 Write property test for Subscription Cancellation Stops Delivery
+    - **Property 5: Subscription Cancellation Stops Delivery**
+    - **Validates: Requirements 3.4**
+
+- [ ] 7. Implement priority-based handler ordering
+  - [ ] 7.1 Sort handlers by priority and registration order before invocation
+    - Higher priority handlers execute first
+    - Equal priority handlers execute in registration order
+    - _Requirements: 6.2, 6.3_
+  - [ ] 7.2 Write property test for Priority-Based Handler Ordering
+    - **Property 9: Priority-Based Handler Ordering**
+    - **Validates: Requirements 6.2, 6.3**
+
+- [ ] 8. Implement error handling strategies
+  - [ ] 8.1 Create ErrorStrategy enum and AggregateException class
+    - Define `stop`, `continueOnError`, `swallow` strategies
+    - Implement AggregateException with errors and stackTraces lists
+    - _Requirements: 7.1, 7.2, 7.3, 7.5_
+  - [ ] 8.2 Add error strategy and callback to EventBus constructor
+    - Add `errorStrategy` parameter with default `ErrorStrategy.stop`
+    - Add optional `onError` callback parameter
+    - _Requirements: 7.1, 7.2, 7.3, 7.4_
+  - [ ] 8.3 Implement error handling in publish() method
+    - Implement stop strategy: halt on first error, rethrow
+    - Implement continueOnError: collect all errors, throw AggregateException
+    - Implement swallow: continue silently, only call callback
+    - _Requirements: 7.1, 7.2, 7.3, 7.5_
+  - [ ] 8.4 Write property test for Error Strategy Stop
+    - **Property 10: Error Strategy Stop Halts Propagation**
+    - **Validates: Requirements 7.1**
+  - [ ] 8.5 Write property test for Error Strategy ContinueOnError
+    - **Property 11: Error Strategy ContinueOnError Collects All Errors**
+    - **Validates: Requirements 7.2, 7.5**
+  - [ ] 8.6 Write property test for Error Strategy Swallow
+    - **Property 12: Error Strategy Swallow Continues Silently**
+    - **Validates: Requirements 7.3**
+  - [ ] 8.7 Write property test for Error Callback Invocation
+    - **Property 13: Error Callback Invocation**
+    - **Validates: Requirements 7.4**
+
+- [ ] 9. Finalize public API exports
+  - [ ] 9.1 Update lib/raiser.dart with all public exports
+    - Export DomainEvent, EventHandler, EventBus, Subscription
+    - Export ErrorStrategy, AggregateException
+    - _Requirements: All_
+
+- [ ] 10. Final Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
