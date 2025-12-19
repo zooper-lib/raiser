@@ -8,6 +8,9 @@ library;
 
 import '../handlers/event_handler.dart';
 import '../handlers/subscription.dart';
+import 'error_strategy.dart';
+
+export 'error_strategy.dart';
 
 /// Callback type for error handling.
 typedef ErrorCallback = void Function(Object error, StackTrace stackTrace);
@@ -52,8 +55,23 @@ class EventBus {
   /// Maps runtime types to lists of handler entries.
   final Map<Type, List<_HandlerEntry<dynamic>>> _handlers = {};
 
+  /// The error handling strategy for this bus.
+  final ErrorStrategy errorStrategy;
+
+  /// Optional callback invoked when a handler throws an error.
+  final ErrorCallback? onError;
+
   /// Creates a new EventBus instance.
-  EventBus();
+  ///
+  /// [errorStrategy] configures how handler exceptions are handled.
+  /// Defaults to [ErrorStrategy.stop].
+  ///
+  /// [onError] is an optional callback invoked for each handler error,
+  /// regardless of the error strategy.
+  EventBus({
+    this.errorStrategy = ErrorStrategy.stop,
+    this.onError,
+  });
 
   /// Registers a class-based handler with optional priority.
   ///
@@ -96,6 +114,11 @@ class EventBus {
   ///
   /// If no handlers are registered for the event type, completes
   /// without error.
+  ///
+  /// Error handling behavior depends on [errorStrategy]:
+  /// - [ErrorStrategy.stop]: Halts on first error and rethrows
+  /// - [ErrorStrategy.continueOnError]: Invokes all handlers, throws [AggregateException]
+  /// - [ErrorStrategy.swallow]: Invokes all handlers, errors only go to callback
   Future<void> publish<T>(T event) async {
     final entries = _handlers[T];
     if (entries == null || entries.isEmpty) {
@@ -110,8 +133,34 @@ class EventBus {
         return a.registrationOrder.compareTo(b.registrationOrder);
       });
 
+    final errors = <Object>[];
+    final stackTraces = <StackTrace>[];
+
     for (final entry in sortedEntries) {
-      await (entry as _HandlerEntry<T>).handler(event);
+      try {
+        await (entry as _HandlerEntry<T>).handler(event);
+      } catch (error, stackTrace) {
+        // Always invoke the error callback if configured
+        onError?.call(error, stackTrace);
+
+        switch (errorStrategy) {
+          case ErrorStrategy.stop:
+            // Halt propagation and rethrow immediately
+            rethrow;
+          case ErrorStrategy.continueOnError:
+            // Collect errors and continue
+            errors.add(error);
+            stackTraces.add(stackTrace);
+          case ErrorStrategy.swallow:
+            // Continue silently (callback already invoked above)
+            break;
+        }
+      }
+    }
+
+    // After all handlers complete, throw aggregate if errors were collected
+    if (errorStrategy == ErrorStrategy.continueOnError && errors.isNotEmpty) {
+      throw AggregateException(errors, stackTraces);
     }
   }
 }

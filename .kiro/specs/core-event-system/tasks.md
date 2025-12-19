@@ -71,56 +71,56 @@
 - [x] 5. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 6. Implement subscription cancellation
-  - [ ] 6.1 Wire Subscription.cancel() to remove handler from EventBus
+- [x] 6. Implement subscription cancellation
+  - [x] 6.1 Wire Subscription.cancel() to remove handler from EventBus
     - Implement removal logic in EventBus
     - Ensure cancelled handlers are not invoked on subsequent publishes
     - _Requirements: 3.4_
-  - [ ] 6.2 Write property test for Subscription Cancellation Stops Delivery
+  - [x] 6.2 Write property test for Subscription Cancellation Stops Delivery
     - **Property 5: Subscription Cancellation Stops Delivery**
     - **Validates: Requirements 3.4**
 
-- [ ] 7. Implement priority-based handler ordering
-  - [ ] 7.1 Sort handlers by priority and registration order before invocation
+- [x] 7. Implement priority-based handler ordering
+  - [x] 7.1 Sort handlers by priority and registration order before invocation
     - Higher priority handlers execute first
     - Equal priority handlers execute in registration order
     - _Requirements: 6.2, 6.3_
-  - [ ] 7.2 Write property test for Priority-Based Handler Ordering
+  - [x] 7.2 Write property test for Priority-Based Handler Ordering
     - **Property 9: Priority-Based Handler Ordering**
     - **Validates: Requirements 6.2, 6.3**
 
-- [ ] 8. Implement error handling strategies
-  - [ ] 8.1 Create ErrorStrategy enum and AggregateException class
+- [x] 8. Implement error handling strategies
+  - [x] 8.1 Create ErrorStrategy enum and AggregateException class
     - Define `stop`, `continueOnError`, `swallow` strategies
     - Implement AggregateException with errors and stackTraces lists
     - _Requirements: 7.1, 7.2, 7.3, 7.5_
-  - [ ] 8.2 Add error strategy and callback to EventBus constructor
+  - [x] 8.2 Add error strategy and callback to EventBus constructor
     - Add `errorStrategy` parameter with default `ErrorStrategy.stop`
     - Add optional `onError` callback parameter
     - _Requirements: 7.1, 7.2, 7.3, 7.4_
-  - [ ] 8.3 Implement error handling in publish() method
+  - [x] 8.3 Implement error handling in publish() method
     - Implement stop strategy: halt on first error, rethrow
     - Implement continueOnError: collect all errors, throw AggregateException
     - Implement swallow: continue silently, only call callback
     - _Requirements: 7.1, 7.2, 7.3, 7.5_
-  - [ ] 8.4 Write property test for Error Strategy Stop
+  - [x] 8.4 Write property test for Error Strategy Stop
     - **Property 10: Error Strategy Stop Halts Propagation**
     - **Validates: Requirements 7.1**
-  - [ ] 8.5 Write property test for Error Strategy ContinueOnError
+  - [x] 8.5 Write property test for Error Strategy ContinueOnError
     - **Property 11: Error Strategy ContinueOnError Collects All Errors**
     - **Validates: Requirements 7.2, 7.5**
-  - [ ] 8.6 Write property test for Error Strategy Swallow
+  - [x] 8.6 Write property test for Error Strategy Swallow
     - **Property 12: Error Strategy Swallow Continues Silently**
     - **Validates: Requirements 7.3**
-  - [ ] 8.7 Write property test for Error Callback Invocation
+  - [x] 8.7 Write property test for Error Callback Invocation
     - **Property 13: Error Callback Invocation**
     - **Validates: Requirements 7.4**
 
-- [ ] 9. Finalize public API exports
-  - [ ] 9.1 Update lib/raiser.dart with all public exports
+- [x] 9. Finalize public API exports
+  - [x] 9.1 Update lib/raiser.dart with all public exports
     - Export DomainEvent, EventHandler, EventBus, Subscription
     - Export ErrorStrategy, AggregateException
     - _Requirements: All_
 
-- [ ] 10. Final Checkpoint - Ensure all tests pass
+- [x] 10. Final Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
