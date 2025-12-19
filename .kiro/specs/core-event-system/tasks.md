@@ -1,40 +1,40 @@
 # Implementation Plan
 
-- [ ] 1. Set up project structure and testing infrastructure
-  - [ ] 1.1 Create directory structure for source files
+- [x] 1. Set up project structure and testing infrastructure
+  - [x] 1.1 Create directory structure for source files
     - Create `lib/src/events/`, `lib/src/handlers/`, `lib/src/bus/` directories
     - Update `lib/raiser.dart` to export public API
     - _Requirements: All_
-  - [ ] 1.2 Add glados dependency and configure test setup
+  - [x] 1.2 Add glados dependency and configure test setup
     - Add `glados` to dev_dependencies in pubspec.yaml
     - Create `test/generators/test_generators.dart` for custom generators
     - _Requirements: All_
 
-- [ ] 2. Implement DomainEvent base class
-  - [ ] 2.1 Create DomainEvent abstract class with metadata
+- [x] 2. Implement DomainEvent base class
+  - [x] 2.1 Create DomainEvent abstract class with metadata
     - Implement `id`, `timestamp`, `aggregateId` fields
     - Implement unique ID generation using UUID or similar
     - Implement `toMetadataMap()` method
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
-  - [ ] 2.2 Write property test for Event ID Uniqueness
+  - [x] 2.2 Write property test for Event ID Uniqueness
     - **Property 1: Event ID Uniqueness**
     - **Validates: Requirements 1.1**
-  - [ ] 2.3 Write property test for Aggregate ID Preservation
+  - [x] 2.3 Write property test for Aggregate ID Preservation
     - **Property 3: Aggregate ID Preservation**
     - **Validates: Requirements 1.3**
-  - [ ] 2.4 Implement concrete test event class and fromMetadataMap
+  - [x] 2.4 Implement concrete test event class and fromMetadataMap
     - Create a concrete DomainEvent subclass for testing round-trip
     - Implement `fromMetadataMap()` reconstruction
     - _Requirements: 1.6_
-  - [ ] 2.5 Write property test for Event Metadata Round-Trip
+  - [x] 2.5 Write property test for Event Metadata Round-Trip
     - **Property 2: Event Metadata Round-Trip**
     - **Validates: Requirements 1.5, 1.6**
 
-- [ ] 3. Implement EventHandler interface and Subscription
-  - [ ] 3.1 Create EventHandler abstract class
+- [x] 3. Implement EventHandler interface and Subscription
+  - [x] 3.1 Create EventHandler abstract class
     - Define generic `EventHandler<T>` with `Future<void> handle(T event)` method
     - _Requirements: 2.1, 2.2, 2.3_
-  - [ ] 3.2 Create Subscription class
+  - [x] 3.2 Create Subscription class
     - Implement `cancel()` method and `isCancelled` getter
     - Ensure cancel is idempotent (calling twice has no additional effect)
     - _Requirements: 3.4, 3.7_
