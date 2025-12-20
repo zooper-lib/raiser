@@ -1,0 +1,123 @@
+# Implementation Plan
+
+- [x] 1. Set up project structure and data models
+  - [x] 1.1 Create data model classes for handler and middleware metadata
+    - Create `HandlerInfo`, `MiddlewareInfo`, `ConstructorInfo`, and `ParameterInfo` classes in `lib/src/models/`
+    - These hold extracted metadata for code generation
+    - _Requirements: 4.1, 5.2, 5.3_
+  - [x] 1.2 Write property test for data model round-trip
+    - **Property 11: Factory Function Parameter Preservation**
+    - **Validates: Requirements 5.2, 5.3**
+    - Test that ParameterInfo preserves all parameter attributes
+
+- [x] 2. Implement handler generator core logic
+  - [x] 2.1 Implement handler validation logic
+    - Validate annotated element is a non-abstract class
+    - Validate class extends `EventHandler<T>`
+    - Emit descriptive errors for invalid configurations
+    - _Requirements: 1.2, 6.1, 6.2, 6.3_
+  - [x] 2.2 Write property test for invalid handler rejection
+    - **Property 2: Invalid Handler Rejection**
+    - **Validates: Requirements 1.2**
+  - [x] 2.3 Implement event type extraction from generics
+    - Use analyzer to resolve the generic type parameter T from `EventHandler<T>`
+    - Handle concrete types and emit errors for unresolvable types
+    - _Requirements: 4.1, 4.2, 4.3_
+  - [x] 2.4 Write property test for event type extraction
+    - **Property 9: Event Type Extraction**
+    - **Validates: Requirements 4.1, 4.2**
+  - [x] 2.5 Implement constructor analysis for dependency injection
+    - Detect if handler has no-arg constructor or requires dependencies
+    - Extract parameter names, types, and default values
+    - _Requirements: 5.1, 5.2, 5.3_
+  - [x] 2.6 Complete RaiserHandlerGenerator implementation
+    - Integrate validation, type extraction, and constructor analysis
+    - Extract priority and busName from annotation
+    - Return HandlerInfo for code generation
+    - _Requirements: 1.1, 1.3, 1.4_
+  - [x] 2.7 Write property test for handler discovery completeness
+    - **Property 1: Handler Discovery Completeness**
+    - **Validates: Requirements 1.1**
+  - [x] 2.8 Write property test for priority preservation
+    - **Property 4: Priority Preservation**
+    - **Validates: Requirements 1.4**
+
+- [x] 3. Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [ ] 4. Implement middleware generator
+  - [ ] 4.1 Implement RaiserMiddlewareGenerator
+    - Validate annotated element is a non-abstract class
+    - Extract priority and busName from annotation
+    - Analyze constructor for dependency injection
+    - Return MiddlewareInfo for code generation
+    - _Requirements: 2.1, 2.2, 2.3_
+  - [ ] 4.2 Write property test for middleware discovery completeness
+    - **Property 5: Middleware Discovery Completeness**
+    - **Validates: Requirements 2.1**
+  - [ ] 4.3 Write property test for middleware priority ordering
+    - **Property 6: Middleware Priority Ordering**
+    - **Validates: Requirements 2.2**
+
+- [ ] 5. Implement code emitter
+  - [ ] 5.1 Create CodeEmitter utility class
+    - Implement `emitInitFunction` for generating the main registration function
+    - Implement `emitHandlerRegistration` for individual handler registration
+    - Implement `emitMiddlewareRegistration` for individual middleware registration
+    - _Requirements: 3.1, 3.2, 3.3_
+  - [ ] 5.2 Write property test for initRaiser function structure
+    - **Property 8: InitRaiser Function Structure**
+    - **Validates: Requirements 3.1**
+  - [ ] 5.3 Implement factory function generation for DI
+    - Generate typedef for factory functions
+    - Generate `initRaiserWithFactories` variant for handlers with dependencies
+    - Preserve parameter names and types
+    - _Requirements: 5.2, 5.3_
+  - [ ] 5.4 Implement named bus support
+    - Generate separate `initRaiser{BusName}Bus` functions for each unique bus name
+    - Group handlers and middleware by their busName
+    - _Requirements: 2.3, 3.4_
+  - [ ] 5.5 Write property test for bus name segregation
+    - **Property 7: Bus Name Segregation**
+    - **Validates: Requirements 2.3, 3.4**
+  - [ ] 5.6 Implement source file comments and formatting
+    - Add comments indicating source file for each handler/middleware
+    - Add priority comments for clarity
+    - Ensure output follows Dart style guidelines
+    - _Requirements: 7.1, 7.2, 7.3_
+  - [ ] 5.7 Write property test for source file comments
+    - **Property 12: Source File Comments**
+    - **Validates: Requirements 7.1, 7.3**
+  - [ ] 5.8 Write property test for code formatting compliance
+    - **Property 13: Code Formatting Compliance**
+    - **Validates: Requirements 7.2**
+
+- [ ] 6. Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [ ] 7. Integrate generators and update builder
+  - [ ] 7.1 Update raiserBuilder to use both generators
+    - Configure SharedPartBuilder with HandlerGenerator and MiddlewareGenerator
+    - Ensure proper build extensions configuration
+    - _Requirements: 1.1, 2.1_
+  - [ ] 7.2 Implement aggregation of generated parts
+    - Combine handler and middleware registrations into unified initRaiser function
+    - Handle multiple files contributing to the same bus
+    - _Requirements: 3.1, 3.2, 3.3_
+  - [ ] 7.3 Write property test for multiple handler registration
+    - **Property 3: Multiple Handler Registration**
+    - **Validates: Requirements 1.3**
+
+- [ ] 8. Create integration tests and examples
+  - [ ] 8.1 Create example handlers and middleware for testing
+    - Add example annotated handlers in example/ directory
+    - Add example annotated middleware
+    - Include handlers with various configurations (priority, busName, DI)
+    - _Requirements: 1.1, 2.1_
+  - [ ] 8.2 Write integration test for full build_runner execution
+    - Test that build_runner produces expected output
+    - Verify generated code compiles successfully
+    - _Requirements: 3.1, 3.2, 3.3_
+
+- [ ] 9. Final Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
