@@ -1,0 +1,12 @@
+name: raiser_annotation
+description: Annotations for the Raiser domain event library code generator.
+version: 1.0.0
+repository: https://github.com/zooper/raiser/tree/main/packages/raiser_annotation
+
+environment:
+  sdk: ^3.10.4
+
+topics:
+  - events
+  - annotations
+  - code-generation

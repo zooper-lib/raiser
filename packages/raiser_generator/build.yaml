@@ -1,0 +1,8 @@
+builders:
+  raiser_builder:
+    import: "package:raiser_generator/raiser_generator.dart"
+    builder_factories: ["raiserBuilder"]
+    build_extensions: {".dart": [".raiser.g.part"]}
+    auto_apply: dependents
+    build_to: cache
+    applies_builders: ["source_gen|combining_builder"]

@@ -1,0 +1,25 @@
+name: raiser_generator
+description: Code generator for the Raiser domain event library. Auto-discovers and registers handlers.
+version: 1.0.0
+repository: https://github.com/zooper/raiser/tree/main/packages/raiser_generator
+
+environment:
+  sdk: ^3.10.4
+
+topics:
+  - events
+  - code-generation
+  - build-runner
+
+dependencies:
+  analyzer: ^7.0.0
+  build: ^2.4.0
+  raiser_annotation:
+    path: ../raiser_annotation
+  source_gen: ^2.0.0
+
+dev_dependencies:
+  build_runner: ^2.4.0
+  build_test: ^2.2.0
+  lints: ^6.0.0
+  test: ^1.25.6
