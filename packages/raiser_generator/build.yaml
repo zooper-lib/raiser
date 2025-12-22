@@ -1,8 +1,18 @@
 builders:
-  raiser_builder:
+  # Phase 1: Collect metadata from individual files
+  raiser_collecting:
     import: "package:raiser_generator/raiser_generator.dart"
-    builder_factories: ["raiserBuilder"]
-    build_extensions: {".dart": [".raiser.g.part"]}
+    builder_factories: ["raiserCollectingBuilder"]
+    build_extensions: {".dart": [".raiser.json"]}
     auto_apply: dependents
     build_to: cache
-    applies_builders: ["source_gen|combining_builder"]
+    runs_before: ["raiser_generator|raiser_aggregating"]
+
+  # Phase 2: Aggregate all metadata into a single output file
+  raiser_aggregating:
+    import: "package:raiser_generator/raiser_generator.dart"
+    builder_factories: ["raiserAggregatingBuilder"]
+    build_extensions: {"lib/$lib$": ["lib/raiser.g.dart"]}
+    auto_apply: dependents
+    build_to: source
+    required_inputs: [".raiser.json"]

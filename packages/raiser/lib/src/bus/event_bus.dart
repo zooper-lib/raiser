@@ -3,6 +3,7 @@
 /// Provides type-safe event routing with support for:
 /// - Class-based and function-based handlers
 /// - Priority-based handler ordering
+/// - Middleware pipeline for cross-cutting concerns
 /// - Configurable error handling strategies
 library;
 
@@ -14,6 +15,12 @@ export 'error_strategy.dart';
 
 /// Callback type for error handling.
 typedef ErrorCallback = void Function(Object error, StackTrace stackTrace);
+
+/// Middleware function signature.
+///
+/// Middleware receives the event and a `next` function to call the next
+/// middleware or handler in the pipeline.
+typedef Middleware = Future<void> Function(dynamic event, Future<void> Function() next);
 
 /// Internal class for storing handler registrations with metadata.
 class _HandlerEntry<T> {
@@ -27,6 +34,20 @@ class _HandlerEntry<T> {
   final int registrationOrder;
 
   _HandlerEntry(this.handler, this.priority, this.registrationOrder);
+}
+
+/// Internal class for storing middleware registrations with metadata.
+class _MiddlewareEntry {
+  /// The middleware function to invoke.
+  final Middleware middleware;
+
+  /// Priority for ordering (higher = earlier/outer execution).
+  final int priority;
+
+  /// Registration order for stable sorting within same priority.
+  final int registrationOrder;
+
+  _MiddlewareEntry(this.middleware, this.priority, this.registrationOrder);
 }
 
 /// Central dispatcher for publishing events and managing handlers.
@@ -51,9 +72,15 @@ class EventBus {
   /// Counter for assigning registration order to handlers.
   int _registrationCounter = 0;
 
+  /// Counter for assigning registration order to middleware.
+  int _middlewareCounter = 0;
+
   /// Type-based handler storage.
   /// Maps runtime types to lists of handler entries.
   final Map<Type, List<_HandlerEntry<dynamic>>> _handlers = {};
+
+  /// Middleware pipeline.
+  final List<_MiddlewareEntry> _middleware = [];
 
   /// The error handling strategy for this bus.
   final ErrorStrategy errorStrategy;
@@ -68,10 +95,36 @@ class EventBus {
   ///
   /// [onError] is an optional callback invoked for each handler error,
   /// regardless of the error strategy.
-  EventBus({
-    this.errorStrategy = ErrorStrategy.stop,
-    this.onError,
-  });
+  EventBus({this.errorStrategy = ErrorStrategy.stop, this.onError});
+
+  /// Adds a middleware to the pipeline with optional priority.
+  ///
+  /// Middleware wraps the handler execution and can perform pre/post
+  /// processing, short-circuit the pipeline, or transform events.
+  ///
+  /// Higher priority middleware executes first (outer layer).
+  ///
+  /// Returns a [Subscription] that can be used to remove the middleware.
+  Subscription addMiddleware(dynamic middleware, {int priority = 0}) {
+    Middleware middlewareFunc;
+
+    // Support both function middleware and class-based middleware with call()
+    if (middleware is Middleware) {
+      middlewareFunc = middleware;
+    } else {
+      // Assume it's a class with a call method
+      middlewareFunc = (event, next) async {
+        await (middleware as dynamic).call(event, next);
+      };
+    }
+
+    final entry = _MiddlewareEntry(middlewareFunc, priority, _middlewareCounter++);
+    _middleware.add(entry);
+
+    return Subscription(() {
+      _middleware.remove(entry);
+    });
+  }
 
   /// Registers a class-based handler with optional priority.
   ///
@@ -89,14 +142,12 @@ class EventBus {
   /// Higher priority handlers execute first.
   ///
   /// Returns a [Subscription] that can be used to cancel the registration.
-  Subscription on<T>(Future<void> Function(T event) handler,
-      {int priority = 0}) {
+  Subscription on<T>(Future<void> Function(T event) handler, {int priority = 0}) {
     return _addHandler<T>(handler, priority);
   }
 
   /// Internal method to add a handler to the registry.
-  Subscription _addHandler<T>(
-      Future<void> Function(T) handler, int priority) {
+  Subscription _addHandler<T>(Future<void> Function(T) handler, int priority) {
     final entry = _HandlerEntry<T>(handler, priority, _registrationCounter++);
 
     _handlers.putIfAbsent(T, () => []);
@@ -112,6 +163,9 @@ class EventBus {
   /// Routes the event to handlers registered for type [T] and awaits
   /// all handler completions before returning.
   ///
+  /// If middleware is registered, the event passes through the middleware
+  /// pipeline before reaching handlers.
+  ///
   /// If no handlers are registered for the event type, completes
   /// without error.
   ///
@@ -120,6 +174,38 @@ class EventBus {
   /// - [ErrorStrategy.continueOnError]: Invokes all handlers, throws [AggregateException]
   /// - [ErrorStrategy.swallow]: Invokes all handlers, errors only go to callback
   Future<void> publish<T>(T event) async {
+    // If we have middleware, wrap the handler execution
+    if (_middleware.isNotEmpty) {
+      await _executeWithMiddleware(event);
+    } else {
+      await _executeHandlers(event);
+    }
+  }
+
+  /// Executes the event through the middleware pipeline.
+  Future<void> _executeWithMiddleware<T>(T event) async {
+    // Sort middleware by priority (descending) then by registration order
+    final sortedMiddleware = List<_MiddlewareEntry>.from(_middleware)
+      ..sort((a, b) {
+        final priorityCompare = b.priority.compareTo(a.priority);
+        if (priorityCompare != 0) return priorityCompare;
+        return a.registrationOrder.compareTo(b.registrationOrder);
+      });
+
+    // Build the middleware chain from innermost to outermost
+    Future<void> Function() chain = () => _executeHandlers(event);
+
+    for (final entry in sortedMiddleware.reversed) {
+      final next = chain;
+      chain = () => entry.middleware(event, next);
+    }
+
+    // Execute the chain
+    await chain();
+  }
+
+  /// Executes handlers for the given event.
+  Future<void> _executeHandlers<T>(T event) async {
     final entries = _handlers[T];
     if (entries == null || entries.isEmpty) {
       return;

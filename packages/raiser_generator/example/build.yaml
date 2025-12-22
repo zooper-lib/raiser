@@ -1,7 +1,7 @@
 targets:
   $default:
     builders:
-      raiser_generator|raiser_builder:
+      raiser_generator|raiser_collecting:
         enabled: true
-      source_gen|combining_builder:
+      raiser_generator|raiser_aggregating:
         enabled: true

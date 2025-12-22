@@ -1,15 +1,15 @@
 import 'package:build/build.dart';
-import 'package:source_gen/source_gen.dart';
 
-import 'raiser_aggregating_builder.dart';
+import 'raiser_collecting_builder.dart';
 
-/// Builder factory for raiser_generator.
+/// Builder factory for the collecting phase.
 ///
-/// This builder uses an aggregating generator that collects all handlers
-/// and middleware from a library and generates a unified initRaiser function.
+/// This builder scans individual Dart files and extracts handler/middleware
+/// metadata into intermediate .raiser.json files.
+Builder raiserCollectingBuilder(BuilderOptions options) => RaiserCollectingBuilder();
+
+/// Builder factory for the aggregating phase.
 ///
-/// Requirements: 1.1, 2.1, 3.1, 3.2, 3.3
-Builder raiserBuilder(BuilderOptions options) => SharedPartBuilder(
-      [RaiserAggregatingGenerator()],
-      'raiser',
-    );
+/// This builder reads all .raiser.json files and generates a single
+/// raiser.g.dart file with all registrations.
+Builder raiserAggregatingBuilder(BuilderOptions options) => RaiserAggregatingBuilder();

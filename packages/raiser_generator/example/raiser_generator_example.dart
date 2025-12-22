@@ -11,6 +11,7 @@
 library raiser_generator_example;
 
 import 'package:raiser/raiser.dart';
+import 'package:raiser_generator_example/raiser.g.dart';
 
 import 'lib/events.dart';
 import 'lib/handlers.dart';

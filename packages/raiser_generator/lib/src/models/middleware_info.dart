@@ -48,4 +48,21 @@ class MiddlewareInfo {
   String toString() =>
       'MiddlewareInfo(className: $className, priority: $priority, '
       'busName: $busName, sourceFile: $sourceFile, constructor: $constructor)';
+
+  Map<String, dynamic> toJson() => {
+        'className': className,
+        'priority': priority,
+        'busName': busName,
+        'sourceFile': sourceFile,
+        'constructor': constructor.toJson(),
+      };
+
+  factory MiddlewareInfo.fromJson(Map<String, dynamic> json) => MiddlewareInfo(
+        className: json['className'] as String,
+        priority: json['priority'] as int,
+        busName: json['busName'] as String?,
+        sourceFile: json['sourceFile'] as String,
+        constructor: ConstructorInfo.fromJson(
+            json['constructor'] as Map<String, dynamic>),
+      );
 }

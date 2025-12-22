@@ -55,4 +55,23 @@ class HandlerInfo {
       'HandlerInfo(className: $className, eventType: $eventType, '
       'priority: $priority, busName: $busName, sourceFile: $sourceFile, '
       'constructor: $constructor)';
+
+  Map<String, dynamic> toJson() => {
+        'className': className,
+        'eventType': eventType,
+        'priority': priority,
+        'busName': busName,
+        'sourceFile': sourceFile,
+        'constructor': constructor.toJson(),
+      };
+
+  factory HandlerInfo.fromJson(Map<String, dynamic> json) => HandlerInfo(
+        className: json['className'] as String,
+        eventType: json['eventType'] as String,
+        priority: json['priority'] as int,
+        busName: json['busName'] as String?,
+        sourceFile: json['sourceFile'] as String,
+        constructor: ConstructorInfo.fromJson(
+            json['constructor'] as Map<String, dynamic>),
+      );
 }

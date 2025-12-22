@@ -46,4 +46,20 @@ class ParameterInfo {
   String toString() =>
       'ParameterInfo(name: $name, type: $type, isRequired: $isRequired, '
       'defaultValue: $defaultValue, isNamed: $isNamed)';
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'type': type,
+        'isRequired': isRequired,
+        'defaultValue': defaultValue,
+        'isNamed': isNamed,
+      };
+
+  factory ParameterInfo.fromJson(Map<String, dynamic> json) => ParameterInfo(
+        name: json['name'] as String,
+        type: json['type'] as String,
+        isRequired: json['isRequired'] as bool,
+        defaultValue: json['defaultValue'] as String?,
+        isNamed: json['isNamed'] as bool? ?? false,
+      );
 }

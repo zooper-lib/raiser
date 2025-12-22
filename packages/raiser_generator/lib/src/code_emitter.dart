@@ -1,6 +1,5 @@
 import 'models/handler_info.dart';
 import 'models/middleware_info.dart';
-import 'models/parameter_info.dart';
 
 /// Utility class for generating well-formatted Dart registration code.
 ///
@@ -16,8 +15,7 @@ class CodeEmitter {
   /// and values are lists of handlers for that bus.
   ///
   /// Requirements: 2.3, 3.4
-  Map<String?, List<HandlerInfo>> groupHandlersByBus(
-      List<HandlerInfo> handlers) {
+  Map<String?, List<HandlerInfo>> groupHandlersByBus(List<HandlerInfo> handlers) {
     final grouped = <String?, List<HandlerInfo>>{};
     for (final handler in handlers) {
       grouped.putIfAbsent(handler.busName, () => []).add(handler);
@@ -31,8 +29,7 @@ class CodeEmitter {
   /// and values are lists of middleware for that bus.
   ///
   /// Requirements: 2.3, 3.4
-  Map<String?, List<MiddlewareInfo>> groupMiddlewareByBus(
-      List<MiddlewareInfo> middleware) {
+  Map<String?, List<MiddlewareInfo>> groupMiddlewareByBus(List<MiddlewareInfo> middleware) {
     final grouped = <String?, List<MiddlewareInfo>>{};
     for (final m in middleware) {
       grouped.putIfAbsent(m.busName, () => []).add(m);
@@ -46,10 +43,7 @@ class CodeEmitter {
   /// separate init functions for each bus.
   ///
   /// Requirements: 2.3, 3.4
-  String emitAllInitFunctions(
-    List<HandlerInfo> handlers,
-    List<MiddlewareInfo> middleware,
-  ) {
+  String emitAllInitFunctions(List<HandlerInfo> handlers, List<MiddlewareInfo> middleware) {
     final buffer = StringBuffer();
 
     // Group by bus name
@@ -57,10 +51,7 @@ class CodeEmitter {
     final middlewareByBus = groupMiddlewareByBus(middleware);
 
     // Get all unique bus names
-    final allBusNames = <String?>{
-      ...handlersByBus.keys,
-      ...middlewareByBus.keys,
-    };
+    final allBusNames = <String?>{...handlersByBus.keys, ...middlewareByBus.keys};
 
     // Generate init function for each bus
     for (final busName in allBusNames) {
@@ -80,25 +71,17 @@ class CodeEmitter {
   /// For named buses, generates `initRaiser{BusName}Bus`.
   ///
   /// Requirements: 3.1, 3.2, 3.3, 3.4
-  String emitInitFunction(
-    String? busName,
-    List<HandlerInfo> handlers,
-    List<MiddlewareInfo> middleware,
-  ) {
+  String emitInitFunction(String? busName, List<HandlerInfo> handlers, List<MiddlewareInfo> middleware) {
     final buffer = StringBuffer();
     final functionName = _getFunctionName(busName);
 
     // Check if any handlers or middleware require factory functions
-    final handlersWithDeps =
-        handlers.where((h) => h.constructor.hasParameters).toList();
-    final middlewareWithDeps =
-        middleware.where((m) => m.constructor.hasParameters).toList();
-    final hasFactoryDependencies =
-        handlersWithDeps.isNotEmpty || middlewareWithDeps.isNotEmpty;
+    final handlersWithDeps = handlers.where((h) => h.constructor.hasParameters).toList();
+    final middlewareWithDeps = middleware.where((m) => m.constructor.hasParameters).toList();
+    final hasFactoryDependencies = handlersWithDeps.isNotEmpty || middlewareWithDeps.isNotEmpty;
 
     // Sort middleware by priority (descending - higher executes first)
-    final sortedMiddleware = List<MiddlewareInfo>.from(middleware)
-      ..sort((a, b) => b.priority.compareTo(a.priority));
+    final sortedMiddleware = List<MiddlewareInfo>.from(middleware)..sort((a, b) => b.priority.compareTo(a.priority));
 
     // Generate the main init function for handlers without dependencies
     buffer.writeln('/// Initializes all Raiser handlers and middleware.');
@@ -129,13 +112,7 @@ class CodeEmitter {
     // Generate factory variant if there are dependencies
     if (hasFactoryDependencies) {
       buffer.writeln();
-      buffer.write(_emitFactoryVariant(
-        busName,
-        handlers,
-        middleware,
-        handlersWithDeps,
-        middlewareWithDeps,
-      ));
+      buffer.write(_emitFactoryVariant(busName, handlers, middleware, handlersWithDeps, middlewareWithDeps));
     }
 
     return buffer.toString();
@@ -155,13 +132,9 @@ class CodeEmitter {
 
     // Generate registration call
     if (handler.priority != 0) {
-      buffer.writeln(
-        '  bus.register<${handler.eventType}>(${handler.className}(), priority: ${handler.priority});',
-      );
+      buffer.writeln('  bus.register<${handler.eventType}>(${handler.className}(), priority: ${handler.priority});');
     } else {
-      buffer.writeln(
-        '  bus.register<${handler.eventType}>(${handler.className}());',
-      );
+      buffer.writeln('  bus.register<${handler.eventType}>(${handler.className}());');
     }
 
     return buffer.toString();
@@ -181,13 +154,9 @@ class CodeEmitter {
 
     // Generate registration call
     if (middleware.priority != 0) {
-      buffer.writeln(
-        '  bus.addMiddleware(${middleware.className}(), priority: ${middleware.priority});',
-      );
+      buffer.writeln('  bus.addMiddleware(${middleware.className}(), priority: ${middleware.priority});');
     } else {
-      buffer.writeln(
-        '  bus.addMiddleware(${middleware.className}());',
-      );
+      buffer.writeln('  bus.addMiddleware(${middleware.className}());');
     }
 
     return buffer.toString();
@@ -221,8 +190,7 @@ class CodeEmitter {
       return 'initRaiser';
     }
     // Capitalize first letter of bus name
-    final capitalizedBusName =
-        busName[0].toUpperCase() + busName.substring(1);
+    final capitalizedBusName = busName[0].toUpperCase() + busName.substring(1);
     return 'initRaiser${capitalizedBusName}Bus';
   }
 
@@ -274,8 +242,7 @@ class CodeEmitter {
     buffer.writeln('}) {');
 
     // Sort middleware by priority (descending)
-    final sortedMiddleware = List<MiddlewareInfo>.from(allMiddleware)
-      ..sort((a, b) => b.priority.compareTo(a.priority));
+    final sortedMiddleware = List<MiddlewareInfo>.from(allMiddleware)..sort((a, b) => b.priority.compareTo(a.priority));
 
     // Emit middleware registrations
     for (final m in sortedMiddleware) {
@@ -283,17 +250,13 @@ class CodeEmitter {
       buffer.writeln('  // Priority: ${m.priority}');
       if (m.constructor.hasParameters) {
         if (m.priority != 0) {
-          buffer.writeln(
-            '  bus.addMiddleware(create${m.className}(), priority: ${m.priority});',
-          );
+          buffer.writeln('  bus.addMiddleware(create${m.className}(), priority: ${m.priority});');
         } else {
           buffer.writeln('  bus.addMiddleware(create${m.className}());');
         }
       } else {
         if (m.priority != 0) {
-          buffer.writeln(
-            '  bus.addMiddleware(${m.className}(), priority: ${m.priority});',
-          );
+          buffer.writeln('  bus.addMiddleware(${m.className}(), priority: ${m.priority});');
         } else {
           buffer.writeln('  bus.addMiddleware(${m.className}());');
         }
@@ -306,23 +269,15 @@ class CodeEmitter {
       buffer.writeln('  // Priority: ${h.priority}');
       if (h.constructor.hasParameters) {
         if (h.priority != 0) {
-          buffer.writeln(
-            '  bus.register<${h.eventType}>(create${h.className}(), priority: ${h.priority});',
-          );
+          buffer.writeln('  bus.register<${h.eventType}>(create${h.className}(), priority: ${h.priority});');
         } else {
-          buffer.writeln(
-            '  bus.register<${h.eventType}>(create${h.className}());',
-          );
+          buffer.writeln('  bus.register<${h.eventType}>(create${h.className}());');
         }
       } else {
         if (h.priority != 0) {
-          buffer.writeln(
-            '  bus.register<${h.eventType}>(${h.className}(), priority: ${h.priority});',
-          );
+          buffer.writeln('  bus.register<${h.eventType}>(${h.className}(), priority: ${h.priority});');
         } else {
-          buffer.writeln(
-            '  bus.register<${h.eventType}>(${h.className}());',
-          );
+          buffer.writeln('  bus.register<${h.eventType}>(${h.className}());');
         }
       }
     }

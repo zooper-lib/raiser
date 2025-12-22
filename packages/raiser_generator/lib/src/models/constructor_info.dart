@@ -40,4 +40,16 @@ class ConstructorInfo {
   @override
   String toString() =>
       'ConstructorInfo(hasParameters: $hasParameters, parameters: $parameters)';
+
+  Map<String, dynamic> toJson() => {
+        'hasParameters': hasParameters,
+        'parameters': parameters.map((p) => p.toJson()).toList(),
+      };
+
+  factory ConstructorInfo.fromJson(Map<String, dynamic> json) => ConstructorInfo(
+        hasParameters: json['hasParameters'] as bool,
+        parameters: (json['parameters'] as List<dynamic>)
+            .map((p) => ParameterInfo.fromJson(p as Map<String, dynamic>))
+            .toList(),
+      );
 }

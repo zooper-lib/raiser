@@ -15,8 +15,6 @@ import 'package:raiser_annotation/raiser_annotation.dart';
 import 'events.dart';
 import 'services.dart';
 
-part 'handlers.g.dart';
-
 // ============================================================================
 // BASIC HANDLERS (default configuration)
 // ============================================================================

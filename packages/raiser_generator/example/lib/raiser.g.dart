@@ -1,10 +1,12 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'middleware.dart';
+// ignore_for_file: type=lint
 
-// **************************************************************************
-// RaiserAggregatingGenerator
-// **************************************************************************
+import 'package:raiser/raiser.dart';
+
+import 'events.dart';
+import 'handlers.dart';
+import 'middleware.dart';
 
 /// Initializes all Raiser handlers and middleware.
 ///
@@ -23,10 +25,26 @@ void initRaiser(EventBus bus) {
   // Middleware: MetricsMiddleware from lib/middleware.dart
   // Priority: -10
   bus.addMiddleware(MetricsMiddleware(), priority: -10);
+  // Handler: UserCreatedHandler from lib/handlers.dart
+  // Priority: 0
+  bus.register<UserCreatedEvent>(UserCreatedHandler());
+  // Handler: UserWelcomeEmailHandler from lib/handlers.dart
+  // Priority: 0
+  bus.register<UserCreatedEvent>(UserWelcomeEmailHandler());
+  // Handler: HighPriorityOrderHandler from lib/handlers.dart
+  // Priority: 100
+  bus.register<OrderPlacedEvent>(HighPriorityOrderHandler(), priority: 100);
+  // Handler: NormalPriorityOrderHandler from lib/handlers.dart
+  // Priority: 0
+  bus.register<OrderPlacedEvent>(NormalPriorityOrderHandler());
+  // Handler: LowPriorityOrderHandler from lib/handlers.dart
+  // Priority: -10
+  bus.register<OrderPlacedEvent>(LowPriorityOrderHandler(), priority: -10);
 }
 
-typedef StructuredLoggingMiddlewareFactory =
-    StructuredLoggingMiddleware Function();
+typedef LoggingUserHandlerFactory = LoggingUserHandler Function();
+typedef OrderProcessingHandlerFactory = OrderProcessingHandler Function();
+typedef StructuredLoggingMiddlewareFactory = StructuredLoggingMiddleware Function();
 typedef AuthorizationMiddlewareFactory = AuthorizationMiddleware Function();
 
 /// Initializes Raiser with factory functions for dependency injection.
@@ -34,6 +52,8 @@ typedef AuthorizationMiddlewareFactory = AuthorizationMiddleware Function();
 /// Use this variant when handlers or middleware require constructor dependencies.
 void initRaiserWithFactories(
   EventBus bus, {
+  required LoggingUserHandlerFactory createLoggingUserHandler,
+  required OrderProcessingHandlerFactory createOrderProcessingHandler,
   required StructuredLoggingMiddlewareFactory createStructuredLoggingMiddleware,
   required AuthorizationMiddlewareFactory createAuthorizationMiddleware,
 }) {
@@ -55,6 +75,27 @@ void initRaiserWithFactories(
   // Middleware: MetricsMiddleware from lib/middleware.dart
   // Priority: -10
   bus.addMiddleware(MetricsMiddleware(), priority: -10);
+  // Handler: UserCreatedHandler from lib/handlers.dart
+  // Priority: 0
+  bus.register<UserCreatedEvent>(UserCreatedHandler());
+  // Handler: UserWelcomeEmailHandler from lib/handlers.dart
+  // Priority: 0
+  bus.register<UserCreatedEvent>(UserWelcomeEmailHandler());
+  // Handler: HighPriorityOrderHandler from lib/handlers.dart
+  // Priority: 100
+  bus.register<OrderPlacedEvent>(HighPriorityOrderHandler(), priority: 100);
+  // Handler: NormalPriorityOrderHandler from lib/handlers.dart
+  // Priority: 0
+  bus.register<OrderPlacedEvent>(NormalPriorityOrderHandler());
+  // Handler: LowPriorityOrderHandler from lib/handlers.dart
+  // Priority: -10
+  bus.register<OrderPlacedEvent>(LowPriorityOrderHandler(), priority: -10);
+  // Handler: LoggingUserHandler from lib/handlers.dart
+  // Priority: 10
+  bus.register<UserCreatedEvent>(createLoggingUserHandler(), priority: 10);
+  // Handler: OrderProcessingHandler from lib/handlers.dart
+  // Priority: 0
+  bus.register<OrderPlacedEvent>(createOrderProcessingHandler());
 }
 
 /// Initializes all Raiser handlers and middleware.
@@ -69,8 +110,15 @@ void initRaiserPaymentsBus(EventBus bus) {
   // Middleware: PaymentSecurityMiddleware from lib/middleware.dart
   // Priority: 0
   bus.addMiddleware(PaymentSecurityMiddleware());
+  // Handler: PaymentHandler from lib/handlers.dart
+  // Priority: 0
+  bus.register<PaymentProcessedEvent>(PaymentHandler());
+  // Handler: PaymentAuditHandler from lib/handlers.dart
+  // Priority: 50
+  bus.register<PaymentProcessedEvent>(PaymentAuditHandler(), priority: 50);
 }
 
+typedef ConfigurablePaymentHandlerFactory = ConfigurablePaymentHandler Function();
 typedef RateLimitingMiddlewareFactory = RateLimitingMiddleware Function();
 
 /// Initializes Raiser with factory functions for dependency injection.
@@ -79,6 +127,7 @@ typedef RateLimitingMiddlewareFactory = RateLimitingMiddleware Function();
 /// Use this variant when handlers or middleware require constructor dependencies.
 void initRaiserPaymentsBusWithFactories(
   EventBus bus, {
+  required ConfigurablePaymentHandlerFactory createConfigurablePaymentHandler,
   required RateLimitingMiddlewareFactory createRateLimitingMiddleware,
 }) {
   // Middleware: RateLimitingMiddleware from lib/middleware.dart
@@ -90,6 +139,15 @@ void initRaiserPaymentsBusWithFactories(
   // Middleware: PaymentSecurityMiddleware from lib/middleware.dart
   // Priority: 0
   bus.addMiddleware(PaymentSecurityMiddleware());
+  // Handler: PaymentHandler from lib/handlers.dart
+  // Priority: 0
+  bus.register<PaymentProcessedEvent>(PaymentHandler());
+  // Handler: PaymentAuditHandler from lib/handlers.dart
+  // Priority: 50
+  bus.register<PaymentProcessedEvent>(PaymentAuditHandler(), priority: 50);
+  // Handler: ConfigurablePaymentHandler from lib/handlers.dart
+  // Priority: 0
+  bus.register<PaymentProcessedEvent>(createConfigurablePaymentHandler());
 }
 
 /// Initializes all Raiser handlers and middleware.
@@ -101,4 +159,8 @@ void initRaiserInventoryBus(EventBus bus) {
   // Middleware: InventoryAuditMiddleware from lib/middleware.dart
   // Priority: 0
   bus.addMiddleware(InventoryAuditMiddleware());
+  // Handler: InventoryHandler from lib/handlers.dart
+  // Priority: 0
+  bus.register<InventoryUpdatedEvent>(InventoryHandler());
 }
+

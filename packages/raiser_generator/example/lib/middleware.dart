@@ -12,8 +12,6 @@ import 'package:raiser_annotation/raiser_annotation.dart';
 
 import 'services.dart';
 
-part 'middleware.g.dart';
-
 // ============================================================================
 // BASIC MIDDLEWARE (default configuration)
 // ============================================================================
