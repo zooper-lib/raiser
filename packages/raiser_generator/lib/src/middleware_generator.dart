@@ -1,34 +1,35 @@
 import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
 import 'package:raiser_annotation/raiser_annotation.dart';
 import 'package:source_gen/source_gen.dart';
 
 import 'models/constructor_info.dart';
-import 'models/handler_info.dart';
+import 'models/middleware_info.dart';
 import 'models/parameter_info.dart';
 
-/// Generator that discovers @RaiserHandler annotated classes
+/// Generator that discovers @RaiserMiddleware annotated classes
 /// and generates registration code.
-class RaiserHandlerGenerator extends GeneratorForAnnotation<RaiserHandler> {
+///
+/// Requirements: 2.1, 2.2, 2.3
+class RaiserMiddlewareGenerator extends GeneratorForAnnotation<RaiserMiddleware> {
   @override
   String generateForAnnotatedElement(
     Element element,
     ConstantReader annotation,
     BuildStep buildStep,
   ) {
-    final handlerInfo = extractHandlerInfo(element, annotation, buildStep);
+    final middlewareInfo = extractMiddlewareInfo(element, annotation, buildStep);
     // Generate registration code
-    return _generateRegistrationCode(handlerInfo);
+    return _generateRegistrationCode(middlewareInfo);
   }
 
-  /// Extracts handler information from an annotated element.
+  /// Extracts middleware information from an annotated element.
   ///
   /// This method is used by both the individual generator and the
-  /// aggregating builder to extract handler metadata.
+  /// aggregating builder to extract middleware metadata.
   ///
-  /// Requirements: 1.1, 4.1, 5.1, 5.2, 5.3
-  HandlerInfo extractHandlerInfo(
+  /// Requirements: 2.1, 2.2, 2.3
+  MiddlewareInfo extractMiddlewareInfo(
     Element element,
     ConstantReader annotation,
     BuildStep buildStep,
@@ -40,16 +41,12 @@ class RaiserHandlerGenerator extends GeneratorForAnnotation<RaiserHandler> {
     final priority = annotation.read('priority').intValue;
     final busName = annotation.peek('busName')?.stringValue;
 
-    // Extract event type from EventHandler<T>
-    final eventType = _extractEventType(classElement);
-
     // Analyze constructor for dependency injection
     final constructorInfo = _analyzeConstructor(classElement);
 
-    // Build HandlerInfo
-    return HandlerInfo(
+    // Build MiddlewareInfo
+    return MiddlewareInfo(
       className: classElement.name,
-      eventType: eventType,
       priority: priority,
       busName: busName,
       sourceFile: buildStep.inputId.path,
@@ -57,38 +54,30 @@ class RaiserHandlerGenerator extends GeneratorForAnnotation<RaiserHandler> {
     );
   }
 
-  /// Validates that the annotated element is a valid handler class.
+  /// Validates that the annotated element is a valid middleware class.
   ///
-  /// Requirements: 1.2, 6.1, 6.2, 6.3
+  /// Requirements: 2.1 (discovery), 6.1, 6.2 (error handling)
   ClassElement _validateElement(Element element) {
-    // Check if element is a class (Requirement 6.1)
+    // Check if element is a class
     if (element is! ClassElement) {
       throw InvalidGenerationSourceError(
-        '@RaiserHandler can only be applied to classes. Found: ${element.kind.displayName}',
+        '@RaiserMiddleware can only be applied to classes. Found: ${element.kind.displayName}',
         element: element,
       );
     }
 
     final classElement = element;
 
-    // Check if class is abstract (Requirement 6.2)
+    // Check if class is abstract
     if (classElement.isAbstract) {
       throw InvalidGenerationSourceError(
-        "@RaiserHandler cannot be applied to abstract classes. "
+        "@RaiserMiddleware cannot be applied to abstract classes. "
         "'${classElement.name}' must be concrete.",
         element: element,
       );
     }
 
-    // Check if class extends EventHandler<T> (Requirement 1.2)
-    if (!_extendsEventHandler(classElement)) {
-      throw InvalidGenerationSourceError(
-        "Class '${classElement.name}' must extend EventHandler<T> to use @RaiserHandler.",
-        element: element,
-      );
-    }
-
-    // Check for accessible constructor (Requirement 6.3)
+    // Check for accessible constructor
     if (!_hasAccessibleConstructor(classElement)) {
       throw InvalidGenerationSourceError(
         "Class '${classElement.name}' must have an accessible constructor for registration.",
@@ -97,17 +86,6 @@ class RaiserHandlerGenerator extends GeneratorForAnnotation<RaiserHandler> {
     }
 
     return classElement;
-  }
-
-  /// Checks if the class extends EventHandler<T>.
-  bool _extendsEventHandler(ClassElement classElement) {
-    // Check supertype chain for EventHandler
-    for (final supertype in classElement.allSupertypes) {
-      if (supertype.element.name == 'EventHandler') {
-        return true;
-      }
-    }
-    return false;
   }
 
   /// Checks if the class has an accessible (public) constructor.
@@ -119,50 +97,6 @@ class RaiserHandlerGenerator extends GeneratorForAnnotation<RaiserHandler> {
       }
     }
     return false;
-  }
-
-  /// Extracts the event type T from EventHandler<T>.
-  ///
-  /// Requirements: 4.1, 4.2, 4.3
-  String _extractEventType(ClassElement classElement) {
-    // Find EventHandler in the supertype chain
-    for (final supertype in classElement.allSupertypes) {
-      if (supertype.element.name == 'EventHandler') {
-        final typeArgs = supertype.typeArguments;
-        if (typeArgs.isNotEmpty) {
-          final eventType = typeArgs.first;
-
-          // Check if the type is resolvable (not dynamic or unresolved)
-          if (eventType is DynamicType) {
-            throw InvalidGenerationSourceError(
-              "Cannot resolve event type for '${classElement.name}'. "
-              "Ensure the generic type parameter is a concrete type.",
-              element: classElement,
-            );
-          }
-
-          // Get the type name with proper handling
-          final typeName = eventType.getDisplayString();
-
-          // Verify it's not a type parameter (unresolved generic)
-          if (eventType is TypeParameterType) {
-            throw InvalidGenerationSourceError(
-              "Cannot resolve event type for '${classElement.name}'. "
-              "Ensure the generic type parameter is a concrete type, not a type variable.",
-              element: classElement,
-            );
-          }
-
-          return typeName;
-        }
-      }
-    }
-
-    throw InvalidGenerationSourceError(
-      "Cannot resolve event type for '${classElement.name}'. "
-      "Ensure the class extends EventHandler<T> with a concrete type.",
-      element: classElement,
-    );
   }
 
   /// Analyzes the constructor for dependency injection support.
@@ -211,12 +145,14 @@ class RaiserHandlerGenerator extends GeneratorForAnnotation<RaiserHandler> {
     );
   }
 
-  /// Generates the registration code for a handler.
-  String _generateRegistrationCode(HandlerInfo info) {
+  /// Generates the registration code for a middleware.
+  ///
+  /// Requirements: 2.2 (priority ordering), 2.3 (bus name), 7.1, 7.2, 7.3
+  String _generateRegistrationCode(MiddlewareInfo info) {
     final buffer = StringBuffer();
 
     // Add source file comment (Requirement 7.1)
-    buffer.writeln('// Handler: ${info.className} from ${info.sourceFile}');
+    buffer.writeln('// Middleware: ${info.className} from ${info.sourceFile}');
 
     // Add priority comment (Requirement 7.3)
     buffer.writeln('// Priority: ${info.priority}');
@@ -230,11 +166,11 @@ class RaiserHandlerGenerator extends GeneratorForAnnotation<RaiserHandler> {
       // Direct instantiation (Requirement 5.1)
       if (info.priority != 0) {
         buffer.writeln(
-          'bus.register<${info.eventType}>(${info.className}(), priority: ${info.priority});',
+          'bus.addMiddleware(${info.className}(), priority: ${info.priority});',
         );
       } else {
         buffer.writeln(
-          'bus.register<${info.eventType}>(${info.className}());',
+          'bus.addMiddleware(${info.className}());',
         );
       }
     } else {

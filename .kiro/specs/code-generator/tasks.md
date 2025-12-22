@@ -45,79 +45,79 @@
 - [x] 3. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 4. Implement middleware generator
-  - [ ] 4.1 Implement RaiserMiddlewareGenerator
+- [x] 4. Implement middleware generator
+  - [x] 4.1 Implement RaiserMiddlewareGenerator
     - Validate annotated element is a non-abstract class
     - Extract priority and busName from annotation
     - Analyze constructor for dependency injection
     - Return MiddlewareInfo for code generation
     - _Requirements: 2.1, 2.2, 2.3_
-  - [ ] 4.2 Write property test for middleware discovery completeness
+  - [x] 4.2 Write property test for middleware discovery completeness
     - **Property 5: Middleware Discovery Completeness**
     - **Validates: Requirements 2.1**
-  - [ ] 4.3 Write property test for middleware priority ordering
+  - [x] 4.3 Write property test for middleware priority ordering
     - **Property 6: Middleware Priority Ordering**
     - **Validates: Requirements 2.2**
 
-- [ ] 5. Implement code emitter
-  - [ ] 5.1 Create CodeEmitter utility class
+- [x] 5. Implement code emitter
+  - [x] 5.1 Create CodeEmitter utility class
     - Implement `emitInitFunction` for generating the main registration function
     - Implement `emitHandlerRegistration` for individual handler registration
     - Implement `emitMiddlewareRegistration` for individual middleware registration
     - _Requirements: 3.1, 3.2, 3.3_
-  - [ ] 5.2 Write property test for initRaiser function structure
+  - [x] 5.2 Write property test for initRaiser function structure
     - **Property 8: InitRaiser Function Structure**
     - **Validates: Requirements 3.1**
-  - [ ] 5.3 Implement factory function generation for DI
+  - [x] 5.3 Implement factory function generation for DI
     - Generate typedef for factory functions
     - Generate `initRaiserWithFactories` variant for handlers with dependencies
     - Preserve parameter names and types
     - _Requirements: 5.2, 5.3_
-  - [ ] 5.4 Implement named bus support
+  - [x] 5.4 Implement named bus support
     - Generate separate `initRaiser{BusName}Bus` functions for each unique bus name
     - Group handlers and middleware by their busName
     - _Requirements: 2.3, 3.4_
-  - [ ] 5.5 Write property test for bus name segregation
+  - [x] 5.5 Write property test for bus name segregation
     - **Property 7: Bus Name Segregation**
     - **Validates: Requirements 2.3, 3.4**
-  - [ ] 5.6 Implement source file comments and formatting
+  - [x] 5.6 Implement source file comments and formatting
     - Add comments indicating source file for each handler/middleware
     - Add priority comments for clarity
     - Ensure output follows Dart style guidelines
     - _Requirements: 7.1, 7.2, 7.3_
-  - [ ] 5.7 Write property test for source file comments
+  - [x] 5.7 Write property test for source file comments
     - **Property 12: Source File Comments**
     - **Validates: Requirements 7.1, 7.3**
-  - [ ] 5.8 Write property test for code formatting compliance
+  - [x] 5.8 Write property test for code formatting compliance
     - **Property 13: Code Formatting Compliance**
     - **Validates: Requirements 7.2**
 
-- [ ] 6. Checkpoint - Ensure all tests pass
+- [x] 6. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 7. Integrate generators and update builder
-  - [ ] 7.1 Update raiserBuilder to use both generators
+- [x] 7. Integrate generators and update builder
+  - [x] 7.1 Update raiserBuilder to use both generators
     - Configure SharedPartBuilder with HandlerGenerator and MiddlewareGenerator
     - Ensure proper build extensions configuration
     - _Requirements: 1.1, 2.1_
-  - [ ] 7.2 Implement aggregation of generated parts
+  - [x] 7.2 Implement aggregation of generated parts
     - Combine handler and middleware registrations into unified initRaiser function
     - Handle multiple files contributing to the same bus
     - _Requirements: 3.1, 3.2, 3.3_
-  - [ ] 7.3 Write property test for multiple handler registration
+  - [x] 7.3 Write property test for multiple handler registration
     - **Property 3: Multiple Handler Registration**
     - **Validates: Requirements 1.3**
 
-- [ ] 8. Create integration tests and examples
-  - [ ] 8.1 Create example handlers and middleware for testing
+- [x] 8. Create integration tests and examples
+  - [x] 8.1 Create example handlers and middleware for testing
     - Add example annotated handlers in example/ directory
     - Add example annotated middleware
     - Include handlers with various configurations (priority, busName, DI)
     - _Requirements: 1.1, 2.1_
-  - [ ] 8.2 Write integration test for full build_runner execution
+  - [x] 8.2 Write integration test for full build_runner execution
     - Test that build_runner produces expected output
     - Verify generated code compiles successfully
     - _Requirements: 3.1, 3.2, 3.3_
 
-- [ ] 9. Final Checkpoint - Ensure all tests pass
+- [x] 9. Final Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
