@@ -117,7 +117,6 @@ void main() {
 
   group('InitRaiser Function Structure', () {
     /// **Feature: code-generator, Property 8: InitRaiser Function Structure**
-    /// **Validates: Requirements 3.1**
     ///
     /// *For any* generated output, there SHALL exist a function named
     /// `initRaiser` (or `initRaiser{BusName}Bus` for named buses) that
@@ -197,7 +196,6 @@ void main() {
     );
 
     /// **Feature: code-generator, Property 3: Multiple Handler Registration**
-    /// **Validates: Requirements 1.3**
     ///
     /// *For any* event type T with multiple handlers registered, the generated
     /// `initRaiser` function SHALL register all handlers for that event type.
@@ -498,7 +496,6 @@ void main() {
 
   group('Named Bus Support', () {
     /// **Feature: code-generator, Property 7: Bus Name Segregation**
-    /// **Validates: Requirements 2.3, 3.4**
     ///
     /// *For any* handlers or middleware specifying a busName, the generator
     /// SHALL produce a separate initialization function for each unique bus name.
@@ -676,7 +673,6 @@ void main() {
 
   group('Source File Comments', () {
     /// **Feature: code-generator, Property 12: Source File Comments**
-    /// **Validates: Requirements 7.1, 7.3**
     ///
     /// *For any* generated handler registration, the output SHALL include
     /// a comment indicating the source file path where the handler is defined.
@@ -752,7 +748,6 @@ void main() {
 
   group('Code Formatting Compliance', () {
     /// **Feature: code-generator, Property 13: Code Formatting Compliance**
-    /// **Validates: Requirements 7.2**
     ///
     /// *For any* generated output, running `dart format` on the output
     /// SHALL produce no changes (output is already properly formatted).

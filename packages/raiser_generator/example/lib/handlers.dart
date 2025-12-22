@@ -6,8 +6,6 @@
 /// - Handler with named bus
 /// - Handler with dependency injection
 /// - Multiple handlers for the same event type
-///
-/// Requirements: 1.1, 2.1
 
 import 'package:raiser/raiser.dart';
 import 'package:raiser_annotation/raiser_annotation.dart';
@@ -33,7 +31,6 @@ class UserCreatedHandler extends EventHandler<UserCreatedEvent> {
 /// Another handler for the same event type.
 ///
 /// Demonstrates that multiple handlers can handle the same event.
-/// Requirements: 1.3
 @RaiserHandler()
 class UserWelcomeEmailHandler extends EventHandler<UserCreatedEvent> {
   @override
@@ -49,7 +46,6 @@ class UserWelcomeEmailHandler extends EventHandler<UserCreatedEvent> {
 /// High priority handler that executes before others.
 ///
 /// Demonstrates priority configuration.
-/// Requirements: 1.4
 @RaiserHandler(priority: 100)
 class HighPriorityOrderHandler extends EventHandler<OrderPlacedEvent> {
   @override
@@ -83,7 +79,6 @@ class LowPriorityOrderHandler extends EventHandler<OrderPlacedEvent> {
 /// Handler registered to the 'payments' bus.
 ///
 /// Demonstrates named bus configuration.
-/// Requirements: 3.4
 @RaiserHandler(busName: 'payments')
 class PaymentHandler extends EventHandler<PaymentProcessedEvent> {
   @override
@@ -117,7 +112,6 @@ class InventoryHandler extends EventHandler<InventoryUpdatedEvent> {
 /// Handler that requires a Logger dependency.
 ///
 /// Demonstrates dependency injection with a single parameter.
-/// Requirements: 5.2, 5.3
 @RaiserHandler(priority: 10)
 class LoggingUserHandler extends EventHandler<UserCreatedEvent> {
   final Logger logger;
@@ -133,7 +127,6 @@ class LoggingUserHandler extends EventHandler<UserCreatedEvent> {
 /// Handler that requires multiple dependencies.
 ///
 /// Demonstrates dependency injection with multiple parameters.
-/// Requirements: 5.2, 5.3
 @RaiserHandler()
 class OrderProcessingHandler extends EventHandler<OrderPlacedEvent> {
   final OrderRepository repository;
@@ -151,7 +144,6 @@ class OrderProcessingHandler extends EventHandler<OrderPlacedEvent> {
 /// Handler with named parameters and default values.
 ///
 /// Demonstrates complex constructor patterns.
-/// Requirements: 5.2, 5.3
 @RaiserHandler(busName: 'payments')
 class ConfigurablePaymentHandler extends EventHandler<PaymentProcessedEvent> {
   final PaymentGateway gateway;

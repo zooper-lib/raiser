@@ -9,8 +9,6 @@ import 'models/parameter_info.dart';
 
 /// Generator that discovers @RaiserMiddleware annotated classes
 /// and generates registration code.
-///
-/// Requirements: 2.1, 2.2, 2.3
 class RaiserMiddlewareGenerator extends GeneratorForAnnotation<RaiserMiddleware> {
   @override
   String generateForAnnotatedElement(
@@ -27,8 +25,6 @@ class RaiserMiddlewareGenerator extends GeneratorForAnnotation<RaiserMiddleware>
   ///
   /// This method is used by both the individual generator and the
   /// aggregating builder to extract middleware metadata.
-  ///
-  /// Requirements: 2.1, 2.2, 2.3
   MiddlewareInfo extractMiddlewareInfo(
     Element element,
     ConstantReader annotation,
@@ -55,8 +51,6 @@ class RaiserMiddlewareGenerator extends GeneratorForAnnotation<RaiserMiddleware>
   }
 
   /// Validates that the annotated element is a valid middleware class.
-  ///
-  /// Requirements: 2.1 (discovery), 6.1, 6.2 (error handling)
   ClassElement _validateElement(Element element) {
     // Check if element is a class
     if (element is! ClassElement) {
@@ -100,8 +94,6 @@ class RaiserMiddlewareGenerator extends GeneratorForAnnotation<RaiserMiddleware>
   }
 
   /// Analyzes the constructor for dependency injection support.
-  ///
-  /// Requirements: 5.1, 5.2, 5.3
   ConstructorInfo _analyzeConstructor(ClassElement classElement) {
     // Find the primary constructor (unnamed or first public)
     ConstructorElement? primaryConstructor;
@@ -146,8 +138,6 @@ class RaiserMiddlewareGenerator extends GeneratorForAnnotation<RaiserMiddleware>
   }
 
   /// Generates the registration code for a middleware.
-  ///
-  /// Requirements: 2.2 (priority ordering), 2.3 (bus name), 7.1, 7.2, 7.3
   String _generateRegistrationCode(MiddlewareInfo info) {
     final buffer = StringBuffer();
 

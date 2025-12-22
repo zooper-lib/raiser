@@ -26,7 +26,6 @@ class TestHandler implements EventHandler<SimpleEvent> {
 void main() {
   group('EventBus', () {
     // **Feature: core-event-system, Property 7: Registration Style Equivalence**
-    // **Validates: Requirements 4.1, 4.2**
     test('Property 7: register() and on() produce equivalent invocation behavior', () async {
       final testMessages = ['hello', 'world', 'test123', 'special !@#'];
 
@@ -52,7 +51,6 @@ void main() {
     });
 
     // **Feature: core-event-system, Property 4: Handler Registration and Invocation**
-    // **Validates: Requirements 3.1, 3.2, 3.5, 3.7**
     test('Property 4: all registered handlers are invoked exactly once', () async {
       final bus = EventBus();
       final invocations = <int>[];
@@ -93,7 +91,6 @@ void main() {
     });
 
     // **Feature: core-event-system, Property 6: Async Handler Completion**
-    // **Validates: Requirements 3.3**
     test('Property 6: publish awaits all async handler completions', () async {
       final bus = EventBus();
       var handler1Completed = false;
@@ -117,7 +114,6 @@ void main() {
     });
 
     // **Feature: core-event-system, Property 8: Custom Event Type Routing**
-    // **Validates: Requirements 5.1, 5.2**
     test('Property 8: handlers only receive events of their registered type', () async {
       final bus = EventBus();
       final simpleEvents = <String>[];
@@ -154,7 +150,6 @@ void main() {
     });
 
     // **Feature: core-event-system, Property 5: Subscription Cancellation Stops Delivery**
-    // **Validates: Requirements 3.4**
     test('Property 5: cancelled subscription does not receive subsequent events', () async {
       // Test with multiple different scenarios
       final testCases = [
@@ -247,7 +242,6 @@ void main() {
     });
 
     // **Feature: core-event-system, Property 9: Priority-Based Handler Ordering**
-    // **Validates: Requirements 6.2, 6.3**
     test('Property 9: handlers execute in descending priority order', () async {
       // Test with various priority configurations
       final priorityConfigs = [

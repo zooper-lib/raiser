@@ -103,7 +103,6 @@ extension HandlerTestGenerators on Any {
 void main() {
   group('HandlerInfo', () {
     /// **Feature: code-generator, Property 2: Invalid Handler Rejection**
-    /// **Validates: Requirements 1.2**
     ///
     /// This test validates that HandlerInfo correctly captures all handler
     /// metadata. The actual rejection of invalid handlers is tested via
@@ -154,7 +153,6 @@ void main() {
 
   group('Handler Validation Logic', () {
     /// **Feature: code-generator, Property 2: Invalid Handler Rejection**
-    /// **Validates: Requirements 1.2**
     ///
     /// *For any* class annotated with `@RaiserHandler` that does not extend
     /// `EventHandler<T>`, the generator SHALL emit a compile-time error.
@@ -217,7 +215,6 @@ void main() {
 
   group('Event Type Extraction', () {
     /// **Feature: code-generator, Property 9: Event Type Extraction**
-    /// **Validates: Requirements 4.1, 4.2**
     ///
     /// *For any* handler extending `EventHandler<T>` where T is a concrete type,
     /// the generated registration code SHALL use type T in the generic parameter
@@ -290,7 +287,6 @@ void main() {
 
   group('Handler Discovery Completeness', () {
     /// **Feature: code-generator, Property 1: Handler Discovery Completeness**
-    /// **Validates: Requirements 1.1**
     ///
     /// *For any* set of source files containing classes annotated with
     /// `@RaiserHandler` that extend `EventHandler<T>`, the generated output
@@ -364,7 +360,6 @@ void main() {
 
   group('Priority Preservation', () {
     /// **Feature: code-generator, Property 4: Priority Preservation**
-    /// **Validates: Requirements 1.4**
     ///
     /// *For any* handler with a specified priority value P, the generated
     /// registration code SHALL include `priority: P` in the registration call.

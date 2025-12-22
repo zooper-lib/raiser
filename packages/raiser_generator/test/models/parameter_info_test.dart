@@ -72,7 +72,6 @@ extension ParameterInfoGenerator on Any {
 void main() {
   group('ParameterInfo', () {
     /// **Feature: code-generator, Property 11: Factory Function Parameter Preservation**
-    /// **Validates: Requirements 5.2, 5.3**
     ///
     /// *For any* handler with constructor parameters, the generated factory
     /// function typedef SHALL preserve all parameter names and types from

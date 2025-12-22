@@ -6,15 +6,11 @@ import 'models/middleware_info.dart';
 /// This class is responsible for emitting the `initRaiser` function and
 /// related registration code for handlers and middleware discovered by
 /// the Raiser generators.
-///
-/// Requirements: 3.1, 3.2, 3.3, 5.2, 5.3, 7.1, 7.2, 7.3
 class CodeEmitter {
   /// Groups handlers by their bus name.
   ///
   /// Returns a map where keys are bus names (null for default bus)
   /// and values are lists of handlers for that bus.
-  ///
-  /// Requirements: 2.3, 3.4
   Map<String?, List<HandlerInfo>> groupHandlersByBus(List<HandlerInfo> handlers) {
     final grouped = <String?, List<HandlerInfo>>{};
     for (final handler in handlers) {
@@ -27,8 +23,6 @@ class CodeEmitter {
   ///
   /// Returns a map where keys are bus names (null for default bus)
   /// and values are lists of middleware for that bus.
-  ///
-  /// Requirements: 2.3, 3.4
   Map<String?, List<MiddlewareInfo>> groupMiddlewareByBus(List<MiddlewareInfo> middleware) {
     final grouped = <String?, List<MiddlewareInfo>>{};
     for (final m in middleware) {
@@ -41,8 +35,6 @@ class CodeEmitter {
   ///
   /// This method groups handlers and middleware by bus name and generates
   /// separate init functions for each bus.
-  ///
-  /// Requirements: 2.3, 3.4
   String emitAllInitFunctions(List<HandlerInfo> handlers, List<MiddlewareInfo> middleware) {
     final buffer = StringBuffer();
 
@@ -69,8 +61,6 @@ class CodeEmitter {
   ///
   /// For the default bus (busName is null), generates `initRaiser`.
   /// For named buses, generates `initRaiser{BusName}Bus`.
-  ///
-  /// Requirements: 3.1, 3.2, 3.3, 3.4
   String emitInitFunction(String? busName, List<HandlerInfo> handlers, List<MiddlewareInfo> middleware) {
     final buffer = StringBuffer();
     final functionName = _getFunctionName(busName);
@@ -119,8 +109,6 @@ class CodeEmitter {
   }
 
   /// Generates registration code for a single handler.
-  ///
-  /// Requirements: 3.2, 7.1, 7.3
   String emitHandlerRegistration(HandlerInfo handler) {
     final buffer = StringBuffer();
 
@@ -141,8 +129,6 @@ class CodeEmitter {
   }
 
   /// Generates registration code for a single middleware.
-  ///
-  /// Requirements: 3.3, 7.1, 7.3
   String emitMiddlewareRegistration(MiddlewareInfo middleware) {
     final buffer = StringBuffer();
 
@@ -166,8 +152,6 @@ class CodeEmitter {
   ///
   /// The factory function takes no parameters - the user is expected to
   /// provide a closure that captures the dependencies.
-  ///
-  /// Requirements: 5.2, 5.3
   String emitFactoryTypedef(HandlerInfo handler) {
     return 'typedef ${handler.className}Factory = ${handler.className} Function();';
   }
@@ -176,15 +160,11 @@ class CodeEmitter {
   ///
   /// The factory function takes no parameters - the user is expected to
   /// provide a closure that captures the dependencies.
-  ///
-  /// Requirements: 5.2, 5.3
   String emitMiddlewareFactoryTypedef(MiddlewareInfo middleware) {
     return 'typedef ${middleware.className}Factory = ${middleware.className} Function();';
   }
 
   /// Gets the function name based on bus name.
-  ///
-  /// Requirements: 3.4
   String _getFunctionName(String? busName) {
     if (busName == null) {
       return 'initRaiser';

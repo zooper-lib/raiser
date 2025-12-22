@@ -5,8 +5,6 @@
 /// - Middleware with priority
 /// - Middleware with named bus
 /// - Middleware with dependency injection
-///
-/// Requirements: 2.1, 2.2, 2.3
 
 import 'package:raiser_annotation/raiser_annotation.dart';
 
@@ -35,7 +33,6 @@ class LoggingMiddleware {
 /// High priority middleware that wraps all others.
 ///
 /// Executes first (outer middleware).
-/// Requirements: 2.2
 @RaiserMiddleware(priority: 100)
 class TimingMiddleware {
   Future<void> call(dynamic event, Future<void> Function() next) async {
@@ -71,7 +68,6 @@ class MetricsMiddleware {
 /// Middleware registered to the 'payments' bus.
 ///
 /// Demonstrates named bus configuration for middleware.
-/// Requirements: 2.3
 @RaiserMiddleware(busName: 'payments')
 class PaymentSecurityMiddleware {
   Future<void> call(dynamic event, Future<void> Function() next) async {
@@ -105,7 +101,6 @@ class InventoryAuditMiddleware {
 /// Middleware that requires a Logger dependency.
 ///
 /// Demonstrates dependency injection with a single parameter.
-/// Requirements: 5.2, 5.3
 @RaiserMiddleware(priority: 80)
 class StructuredLoggingMiddleware {
   final Logger logger;

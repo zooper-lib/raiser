@@ -2,9 +2,6 @@
 ///
 /// These tests verify that the CodeEmitter produces expected output
 /// and that the generated code structure is correct.
-///
-/// Requirements: 3.1, 3.2, 3.3
-
 import 'package:raiser_generator/raiser_generator.dart';
 import 'package:test/test.dart';
 
@@ -18,7 +15,6 @@ void main() {
 
     group('InitRaiser function generation', () {
       /// **Feature: code-generator, Property 8: InitRaiser Function Structure**
-      /// **Validates: Requirements 3.1**
       ///
       /// Tests that the emitter produces a function named `initRaiser`
       /// that accepts an `EventBus` parameter.
@@ -41,7 +37,6 @@ void main() {
       });
 
       /// Tests that multiple handlers for the same event type are all registered.
-      /// **Validates: Requirements 1.3, 3.2**
       test('generates registration for multiple handlers of same event type',
           () {
         final handlers = [
@@ -69,7 +64,6 @@ void main() {
       });
 
       /// Tests that priority is included in registration calls.
-      /// **Validates: Requirements 1.4**
       test('includes priority in registration call', () {
         final handlers = [
           HandlerInfo(
@@ -92,7 +86,6 @@ void main() {
       });
 
       /// Tests that middleware is registered with initRaiser.
-      /// **Validates: Requirements 2.1, 3.3**
       test('generates middleware registration', () {
         final middleware = [
           MiddlewareInfo(
@@ -111,7 +104,6 @@ void main() {
       });
 
       /// Tests that middleware priority ordering is correct.
-      /// **Validates: Requirements 2.2**
       test('orders middleware by priority (descending)', () {
         final middleware = [
           MiddlewareInfo(
@@ -140,7 +132,6 @@ void main() {
 
     group('Named bus generation', () {
       /// **Feature: code-generator, Property 7: Bus Name Segregation**
-      /// **Validates: Requirements 2.3, 3.4**
       test('generates separate init functions for named buses', () {
         final handlers = [
           HandlerInfo(
@@ -198,7 +189,6 @@ void main() {
 
     group('Dependency injection', () {
       /// Tests that handlers with dependencies generate factory functions.
-      /// **Validates: Requirements 5.2, 5.3**
       test('generates factory functions for handlers with dependencies', () {
         final handlers = [
           HandlerInfo(
@@ -267,7 +257,6 @@ void main() {
 
     group('Source file comments', () {
       /// **Feature: code-generator, Property 12: Source File Comments**
-      /// **Validates: Requirements 7.1, 7.3**
       test('includes source file comments in generated code', () {
         final handlers = [
           HandlerInfo(
@@ -291,7 +280,6 @@ void main() {
 
     group('Combined handlers and middleware', () {
       /// Tests combined handlers and middleware in same file.
-      /// **Validates: Requirements 3.1, 3.2, 3.3**
       test('generates combined registration for handlers and middleware', () {
         final handlers = [
           HandlerInfo(
@@ -353,7 +341,6 @@ void main() {
 
     group('Generated code structure', () {
       /// Tests that generated code is syntactically valid Dart.
-      /// **Validates: Requirements 7.2**
       test('generated code has balanced braces', () {
         final handlers = [
           HandlerInfo(

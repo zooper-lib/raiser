@@ -10,7 +10,6 @@ class TestEvent {
 void main() {
   group('Error Handling', () {
     // **Feature: core-event-system, Property 10: Error Strategy Stop Halts Propagation**
-    // **Validates: Requirements 7.1**
     group('Property 10: Error Strategy Stop Halts Propagation', () {
       test('stop strategy halts on first error and rethrows', () async {
         final bus = EventBus(errorStrategy: ErrorStrategy.stop);
@@ -108,7 +107,6 @@ void main() {
     });
 
     // **Feature: core-event-system, Property 11: Error Strategy ContinueOnError Collects All Errors**
-    // **Validates: Requirements 7.2, 7.5**
     group('Property 11: Error Strategy ContinueOnError Collects All Errors', () {
       test('continueOnError invokes all handlers and collects errors', () async {
         final bus = EventBus(errorStrategy: ErrorStrategy.continueOnError);
@@ -222,7 +220,6 @@ void main() {
     });
 
     // **Feature: core-event-system, Property 12: Error Strategy Swallow Continues Silently**
-    // **Validates: Requirements 7.3**
     group('Property 12: Error Strategy Swallow Continues Silently', () {
       test('swallow strategy invokes all handlers without throwing', () async {
         final bus = EventBus(errorStrategy: ErrorStrategy.swallow);
@@ -310,7 +307,6 @@ void main() {
     });
 
     // **Feature: core-event-system, Property 13: Error Callback Invocation**
-    // **Validates: Requirements 7.4**
     group('Property 13: Error Callback Invocation', () {
       test('error callback is invoked for each handler error with stop strategy', () async {
         final callbackErrors = <Object>[];

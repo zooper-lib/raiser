@@ -32,7 +32,6 @@ class TestEvent extends DomainEvent {
 void main() {
   group('DomainEvent', () {
     // **Feature: core-event-system, Property 1: Event ID Uniqueness**
-    // **Validates: Requirements 1.1**
     test('Property 1: all event IDs are unique across multiple instances', () {
       final events = List.generate(100, (_) => TestEvent(name: 'test'));
       final ids = events.map((e) => e.id).toSet();
@@ -40,7 +39,6 @@ void main() {
     });
 
     // **Feature: core-event-system, Property 3: Aggregate ID Preservation**
-    // **Validates: Requirements 1.3**
     test('Property 3: aggregate ID is preserved exactly as provided', () {
       final testIds = ['agg-1', 'agg-123', 'user-abc', 'order-xyz-999'];
       for (final aggregateId in testIds) {
@@ -55,7 +53,6 @@ void main() {
     });
 
     // **Feature: core-event-system, Property 2: Event Metadata Round-Trip**
-    // **Validates: Requirements 1.5, 1.6**
     test('Property 2: serializing and deserializing preserves event metadata', () {
       final testCases = [
         TestEvent(name: 'simple'),
