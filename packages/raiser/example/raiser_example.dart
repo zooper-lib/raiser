@@ -1,7 +1,7 @@
-/// Raiser Package Examples
-///
-/// This file demonstrates all features of the Raiser event bus library,
-/// from basic usage to advanced patterns.
+// Raiser Package Examples
+//
+// This file demonstrates all features of the Raiser event bus library,
+// from basic usage to advanced patterns.
 
 import 'package:raiser/raiser.dart';
 

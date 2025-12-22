@@ -16,5 +16,5 @@ dev_dependencies:
   build_runner: ^2.4.0
   raiser_generator:
     path: ..
-  source_gen: ^2.0.0
+  source_gen: ^4.0.0
 

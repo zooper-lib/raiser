@@ -18,8 +18,8 @@ import 'models/middleware_info.dart';
 /// 1. CollectingBuilder: Scans each .dart file, extracts metadata, writes .raiser.json
 /// 2. AggregatingBuilder: Reads all .raiser.json files, generates single raiser.g.dart
 class RaiserCollectingBuilder implements Builder {
-  final _handlerChecker = const TypeChecker.fromRuntime(RaiserHandler);
-  final _middlewareChecker = const TypeChecker.fromRuntime(RaiserMiddleware);
+  final _handlerChecker = const TypeChecker.typeNamed(RaiserHandler);
+  final _middlewareChecker = const TypeChecker.typeNamed(RaiserMiddleware);
   final _handlerGenerator = RaiserHandlerGenerator();
   final _middlewareGenerator = RaiserMiddlewareGenerator();
 
@@ -71,8 +71,8 @@ class RaiserCollectingBuilder implements Builder {
       // Collect imports from the source file - only event type imports are needed
       // We need imports that define the event types used in handlers
       final sourceImports = <String>[];
-      for (final importedLibrary in library.importedLibraries) {
-        final source = importedLibrary.source.uri.toString();
+      for (final importedLibrary in library.firstFragment.importedLibraries) {
+        final source = importedLibrary.firstFragment.source.uri.toString();
         // Only include imports that likely contain event definitions
         // Skip dart:, raiser packages, and service-like files
         if (!source.startsWith('dart:') &&

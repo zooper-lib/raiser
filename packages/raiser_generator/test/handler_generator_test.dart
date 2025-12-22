@@ -2,7 +2,6 @@ import 'package:glados/glados.dart';
 import 'package:raiser_generator/src/models/handler_info.dart';
 import 'package:raiser_generator/src/models/constructor_info.dart';
 import 'package:raiser_generator/src/models/parameter_info.dart';
-import 'package:test/test.dart';
 
 /// Custom generators for property-based testing of handler generator logic.
 extension HandlerTestGenerators on Any {

@@ -41,10 +41,7 @@ void main() {
   });
 }
 
-class _TestEvent extends DomainEvent {
-  @override
-  Map<String, dynamic> toMetadataMap() => super.toMetadataMap();
-}
+class _TestEvent extends DomainEvent {}
 
 class _TestHandler implements EventHandler<_TestEvent> {
   @override

@@ -46,7 +46,7 @@ class RaiserMiddlewareGenerator extends GeneratorForAnnotation<RaiserMiddleware>
 
     // Build MiddlewareInfo
     return MiddlewareInfo(
-      className: classElement.name,
+      className: classElement.name ?? '',
       priority: priority,
       busName: busName,
       sourceFile: buildStep.inputId.path,
@@ -109,7 +109,7 @@ class RaiserMiddlewareGenerator extends GeneratorForAnnotation<RaiserMiddleware>
     for (final constructor in classElement.constructors) {
       if (!constructor.isPrivate && !constructor.isFactory) {
         // Prefer unnamed constructor
-        if (constructor.name.isEmpty) {
+        if (constructor.name?.isEmpty ?? true) {
           primaryConstructor = constructor;
           break;
         }
@@ -122,7 +122,7 @@ class RaiserMiddlewareGenerator extends GeneratorForAnnotation<RaiserMiddleware>
       return const ConstructorInfo.noArgs();
     }
 
-    final parameters = primaryConstructor.parameters;
+    final parameters = primaryConstructor.formalParameters;
 
     if (parameters.isEmpty) {
       return const ConstructorInfo.noArgs();
@@ -131,7 +131,7 @@ class RaiserMiddlewareGenerator extends GeneratorForAnnotation<RaiserMiddleware>
     // Extract parameter information
     final parameterInfos = parameters.map((param) {
       return ParameterInfo(
-        name: param.name,
+        name: param.name ?? '',
         type: param.type.getDisplayString(),
         isRequired: param.isRequired,
         defaultValue: param.defaultValueCode,

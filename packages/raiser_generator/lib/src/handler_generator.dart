@@ -26,8 +26,6 @@ class RaiserHandlerGenerator extends GeneratorForAnnotation<RaiserHandler> {
   ///
   /// This method is used by both the individual generator and the
   /// aggregating builder to extract handler metadata.
-  ///
-  /// Requirements: 1.1, 4.1, 5.1, 5.2, 5.3
   HandlerInfo extractHandlerInfo(
     Element element,
     ConstantReader annotation,
@@ -48,7 +46,7 @@ class RaiserHandlerGenerator extends GeneratorForAnnotation<RaiserHandler> {
 
     // Build HandlerInfo
     return HandlerInfo(
-      className: classElement.name,
+      className: classElement.name ?? '',
       eventType: eventType,
       priority: priority,
       busName: busName,
@@ -58,8 +56,6 @@ class RaiserHandlerGenerator extends GeneratorForAnnotation<RaiserHandler> {
   }
 
   /// Validates that the annotated element is a valid handler class.
-  ///
-  /// Requirements: 1.2, 6.1, 6.2, 6.3
   ClassElement _validateElement(Element element) {
     // Check if element is a class (Requirement 6.1)
     if (element is! ClassElement) {
@@ -122,8 +118,6 @@ class RaiserHandlerGenerator extends GeneratorForAnnotation<RaiserHandler> {
   }
 
   /// Extracts the event type T from EventHandler<T>.
-  ///
-  /// Requirements: 4.1, 4.2, 4.3
   String _extractEventType(ClassElement classElement) {
     // Find EventHandler in the supertype chain
     for (final supertype in classElement.allSupertypes) {
@@ -166,8 +160,6 @@ class RaiserHandlerGenerator extends GeneratorForAnnotation<RaiserHandler> {
   }
 
   /// Analyzes the constructor for dependency injection support.
-  ///
-  /// Requirements: 5.1, 5.2, 5.3
   ConstructorInfo _analyzeConstructor(ClassElement classElement) {
     // Find the primary constructor (unnamed or first public)
     ConstructorElement? primaryConstructor;
@@ -175,7 +167,7 @@ class RaiserHandlerGenerator extends GeneratorForAnnotation<RaiserHandler> {
     for (final constructor in classElement.constructors) {
       if (!constructor.isPrivate && !constructor.isFactory) {
         // Prefer unnamed constructor
-        if (constructor.name.isEmpty) {
+        if (constructor.name?.isEmpty ?? true) {
           primaryConstructor = constructor;
           break;
         }
@@ -188,7 +180,7 @@ class RaiserHandlerGenerator extends GeneratorForAnnotation<RaiserHandler> {
       return const ConstructorInfo.noArgs();
     }
 
-    final parameters = primaryConstructor.parameters;
+    final parameters = primaryConstructor.formalParameters;
 
     if (parameters.isEmpty) {
       return const ConstructorInfo.noArgs();
@@ -197,7 +189,7 @@ class RaiserHandlerGenerator extends GeneratorForAnnotation<RaiserHandler> {
     // Extract parameter information
     final parameterInfos = parameters.map((param) {
       return ParameterInfo(
-        name: param.name,
+        name: param.name ?? '',
         type: param.type.getDisplayString(),
         isRequired: param.isRequired,
         defaultValue: param.defaultValueCode,

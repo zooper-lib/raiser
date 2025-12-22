@@ -49,18 +49,8 @@ void main() {
 
       test('combines middleware from multiple source files', () {
         final middleware = [
-          MiddlewareInfo(
-            className: 'LoggingMiddleware',
-            priority: 100,
-            sourceFile: 'lib/middleware/logging.dart',
-            constructor: const ConstructorInfo.noArgs(),
-          ),
-          MiddlewareInfo(
-            className: 'AuthMiddleware',
-            priority: 50,
-            sourceFile: 'lib/middleware/auth.dart',
-            constructor: const ConstructorInfo.noArgs(),
-          ),
+          MiddlewareInfo(className: 'LoggingMiddleware', priority: 100, sourceFile: 'lib/middleware/logging.dart', constructor: const ConstructorInfo.noArgs()),
+          MiddlewareInfo(className: 'AuthMiddleware', priority: 50, sourceFile: 'lib/middleware/auth.dart', constructor: const ConstructorInfo.noArgs()),
         ];
 
         final result = emitter.emitInitFunction(null, [], middleware);
@@ -81,12 +71,7 @@ void main() {
         ];
 
         final middleware = [
-          MiddlewareInfo(
-            className: 'TestMiddleware',
-            priority: 0,
-            sourceFile: 'lib/middleware.dart',
-            constructor: const ConstructorInfo.noArgs(),
-          ),
+          MiddlewareInfo(className: 'TestMiddleware', priority: 0, sourceFile: 'lib/middleware.dart', constructor: const ConstructorInfo.noArgs()),
         ];
 
         final result = emitter.emitInitFunction(null, handlers, middleware);
@@ -176,13 +161,7 @@ void main() {
 
       test('groupMiddlewareByBus correctly partitions middleware', () {
         final middleware = [
-          MiddlewareInfo(
-            className: 'Middleware1',
-            priority: 0,
-            busName: null,
-            sourceFile: 'lib/middleware.dart',
-            constructor: const ConstructorInfo.noArgs(),
-          ),
+          MiddlewareInfo(className: 'Middleware1', priority: 0, busName: null, sourceFile: 'lib/middleware.dart', constructor: const ConstructorInfo.noArgs()),
           MiddlewareInfo(
             className: 'Middleware2',
             priority: 0,
@@ -236,13 +215,7 @@ void main() {
             sourceFile: 'lib/handlers.dart',
             constructor: ConstructorInfo(
               hasParameters: true,
-              parameters: [
-                const ParameterInfo(
-                  name: 'logger',
-                  type: 'Logger',
-                  isRequired: true,
-                ),
-              ],
+              parameters: [const ParameterInfo(name: 'logger', type: 'Logger', isRequired: true)],
             ),
           ),
         ];
@@ -262,13 +235,7 @@ void main() {
             sourceFile: 'lib/middleware.dart',
             constructor: ConstructorInfo(
               hasParameters: true,
-              parameters: [
-                const ParameterInfo(
-                  name: 'authService',
-                  type: 'AuthService',
-                  isRequired: true,
-                ),
-              ],
+              parameters: [const ParameterInfo(name: 'authService', type: 'AuthService', isRequired: true)],
             ),
           ),
         ];
@@ -288,13 +255,7 @@ void main() {
             sourceFile: 'lib/handlers.dart',
             constructor: ConstructorInfo(
               hasParameters: true,
-              parameters: [
-                const ParameterInfo(
-                  name: 'service',
-                  type: 'MyService',
-                  isRequired: true,
-                ),
-              ],
+              parameters: [const ParameterInfo(name: 'service', type: 'MyService', isRequired: true)],
             ),
           ),
         ];
@@ -320,13 +281,7 @@ void main() {
             sourceFile: 'lib/handlers.dart',
             constructor: ConstructorInfo(
               hasParameters: true,
-              parameters: [
-                const ParameterInfo(
-                  name: 'dep',
-                  type: 'Dependency',
-                  isRequired: true,
-                ),
-              ],
+              parameters: [const ParameterInfo(name: 'dep', type: 'Dependency', isRequired: true)],
             ),
           ),
         ];
@@ -335,10 +290,7 @@ void main() {
 
         // initRaiser should only register no-arg handlers
         expect(result, contains('void initRaiser(EventBus bus)'));
-        final initRaiserSection = result.substring(
-          result.indexOf('void initRaiser'),
-          result.indexOf('typedef'),
-        );
+        final initRaiserSection = result.substring(result.indexOf('void initRaiser'), result.indexOf('typedef'));
         expect(initRaiserSection, contains('SimpleHandler()'));
         expect(initRaiserSection, isNot(contains('ComplexHandler')));
 
@@ -351,24 +303,9 @@ void main() {
     group('Priority Ordering', () {
       test('middleware is sorted by priority in output', () {
         final middleware = [
-          MiddlewareInfo(
-            className: 'LowPriorityMiddleware',
-            priority: -10,
-            sourceFile: 'lib/middleware.dart',
-            constructor: const ConstructorInfo.noArgs(),
-          ),
-          MiddlewareInfo(
-            className: 'HighPriorityMiddleware',
-            priority: 100,
-            sourceFile: 'lib/middleware.dart',
-            constructor: const ConstructorInfo.noArgs(),
-          ),
-          MiddlewareInfo(
-            className: 'MediumPriorityMiddleware',
-            priority: 50,
-            sourceFile: 'lib/middleware.dart',
-            constructor: const ConstructorInfo.noArgs(),
-          ),
+          MiddlewareInfo(className: 'LowPriorityMiddleware', priority: -10, sourceFile: 'lib/middleware.dart', constructor: const ConstructorInfo.noArgs()),
+          MiddlewareInfo(className: 'HighPriorityMiddleware', priority: 100, sourceFile: 'lib/middleware.dart', constructor: const ConstructorInfo.noArgs()),
+          MiddlewareInfo(className: 'MediumPriorityMiddleware', priority: 50, sourceFile: 'lib/middleware.dart', constructor: const ConstructorInfo.noArgs()),
         ];
 
         final result = emitter.emitInitFunction(null, [], middleware);
@@ -384,12 +321,7 @@ void main() {
 
       test('priority value is included in registration', () {
         final middleware = [
-          MiddlewareInfo(
-            className: 'PriorityMiddleware',
-            priority: 75,
-            sourceFile: 'lib/middleware.dart',
-            constructor: const ConstructorInfo.noArgs(),
-          ),
+          MiddlewareInfo(className: 'PriorityMiddleware', priority: 75, sourceFile: 'lib/middleware.dart', constructor: const ConstructorInfo.noArgs()),
         ];
 
         final result = emitter.emitInitFunction(null, [], middleware);
@@ -399,12 +331,7 @@ void main() {
 
       test('zero priority omits priority parameter', () {
         final middleware = [
-          MiddlewareInfo(
-            className: 'DefaultPriorityMiddleware',
-            priority: 0,
-            sourceFile: 'lib/middleware.dart',
-            constructor: const ConstructorInfo.noArgs(),
-          ),
+          MiddlewareInfo(className: 'DefaultPriorityMiddleware', priority: 0, sourceFile: 'lib/middleware.dart', constructor: const ConstructorInfo.noArgs()),
         ];
 
         final result = emitter.emitInitFunction(null, [], middleware);
@@ -433,12 +360,7 @@ void main() {
 
       test('includes source file comment for middleware', () {
         final middleware = [
-          MiddlewareInfo(
-            className: 'MyMiddleware',
-            priority: 50,
-            sourceFile: 'lib/middleware/my_middleware.dart',
-            constructor: const ConstructorInfo.noArgs(),
-          ),
+          MiddlewareInfo(className: 'MyMiddleware', priority: 50, sourceFile: 'lib/middleware/my_middleware.dart', constructor: const ConstructorInfo.noArgs()),
         ];
 
         final result = emitter.emitInitFunction(null, [], middleware);
@@ -491,13 +413,7 @@ void main() {
             sourceFile: 'lib/handlers.dart',
             constructor: ConstructorInfo(
               hasParameters: true,
-              parameters: [
-                const ParameterInfo(
-                  name: 'service',
-                  type: 'OrderService',
-                  isRequired: true,
-                ),
-              ],
+              parameters: [const ParameterInfo(name: 'service', type: 'OrderService', isRequired: true)],
             ),
           ),
         ];

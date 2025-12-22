@@ -1,11 +1,9 @@
-/// Edge case and stress tests for the EventBus.
-///
-/// These tests verify behavior in unusual or extreme scenarios.
-
 import 'package:raiser/raiser.dart';
 import 'package:test/test.dart';
 
-/// Simple event for testing.
+/// Edge case and stress tests for the EventBus.
+///
+/// These tests verify behavior in unusual or extreme scenarios.
 class TestEvent extends DomainEvent {
   final String value;
   TestEvent(this.value);
@@ -87,10 +85,8 @@ void main() {
         final order = <int>[];
 
         bus.on<TestEvent>((e) async => order.add(0), priority: 0);
-        bus.on<TestEvent>((e) async => order.add(-2147483648),
-            priority: -2147483648);
-        bus.on<TestEvent>((e) async => order.add(2147483647),
-            priority: 2147483647);
+        bus.on<TestEvent>((e) async => order.add(-2147483648), priority: -2147483648);
+        bus.on<TestEvent>((e) async => order.add(2147483647), priority: 2147483647);
 
         await bus.publish(TestEvent('test'));
 
@@ -141,9 +137,7 @@ void main() {
           received.add(event.value);
         });
 
-        await Future.wait(
-          List.generate(100, (i) => bus.publish(TestEvent('event-$i'))),
-        );
+        await Future.wait(List.generate(100, (i) => bus.publish(TestEvent('event-$i'))));
 
         expect(received.length, equals(100));
       });
@@ -213,14 +207,7 @@ void main() {
           throw Exception('error 3');
         });
 
-        expect(
-          () => bus.publish(TestEvent('test')),
-          throwsA(isA<AggregateException>().having(
-            (e) => e.errors.length,
-            'error count',
-            equals(3),
-          )),
-        );
+        expect(() => bus.publish(TestEvent('test')), throwsA(isA<AggregateException>().having((e) => e.errors.length, 'error count', equals(3))));
       });
     });
 
@@ -318,13 +305,16 @@ void main() {
       order.add('---');
       await bus.publish(TestEvent('second'));
 
-      expect(order, equals([
-        'middleware:before',
-        'handler',
-        'middleware:after',
-        '---',
-        'handler', // Second publish has no middleware
-      ]));
+      expect(
+        order,
+        equals([
+          'middleware:before',
+          'handler',
+          'middleware:after',
+          '---',
+          'handler', // Second publish has no middleware
+        ]),
+      );
     });
 
     test('deeply nested middleware chain works', () async {

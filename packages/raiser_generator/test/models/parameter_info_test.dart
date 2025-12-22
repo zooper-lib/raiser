@@ -1,6 +1,5 @@
 import 'package:glados/glados.dart';
 import 'package:raiser_generator/src/models/parameter_info.dart';
-import 'package:test/test.dart';
 
 /// Custom generator for ParameterInfo.
 /// Generates valid Dart parameter names and types.

@@ -1,11 +1,11 @@
-/// Raiser Advanced Examples
-///
-/// Demonstrates advanced patterns and real-world use cases:
-/// - Event sourcing patterns
-/// - Saga/Process manager pattern
-/// - Event replay and projection
-/// - Multi-bus architecture
-/// - Testing patterns
+// Raiser Advanced Examples
+//
+// Demonstrates advanced patterns and real-world use cases:
+// - Event sourcing patterns
+// - Saga/Process manager pattern
+// - Event replay and projection
+// - Multi-bus architecture
+// - Testing patterns
 
 import 'package:raiser/raiser.dart';
 

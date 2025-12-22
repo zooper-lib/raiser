@@ -10,11 +10,7 @@ void main() {
   group('Model JSON Serialization', () {
     group('ParameterInfo', () {
       test('serializes required parameter correctly', () {
-        const param = ParameterInfo(
-          name: 'logger',
-          type: 'Logger',
-          isRequired: true,
-        );
+        const param = ParameterInfo(name: 'logger', type: 'Logger', isRequired: true);
 
         final json = param.toJson();
 
@@ -26,13 +22,7 @@ void main() {
       });
 
       test('serializes optional named parameter correctly', () {
-        const param = ParameterInfo(
-          name: 'timeout',
-          type: 'Duration',
-          isRequired: false,
-          defaultValue: 'const Duration(seconds: 30)',
-          isNamed: true,
-        );
+        const param = ParameterInfo(name: 'timeout', type: 'Duration', isRequired: false, defaultValue: 'const Duration(seconds: 30)', isNamed: true);
 
         final json = param.toJson();
 
@@ -44,13 +34,7 @@ void main() {
       });
 
       test('deserializes from JSON correctly', () {
-        final json = {
-          'name': 'service',
-          'type': 'MyService',
-          'isRequired': true,
-          'defaultValue': null,
-          'isNamed': false,
-        };
+        final json = {'name': 'service', 'type': 'MyService', 'isRequired': true, 'defaultValue': null, 'isNamed': false};
 
         final param = ParameterInfo.fromJson(json);
 
@@ -62,13 +46,7 @@ void main() {
       });
 
       test('roundtrip serialization preserves all fields', () {
-        const original = ParameterInfo(
-          name: 'config',
-          type: 'Configuration',
-          isRequired: false,
-          defaultValue: 'Configuration.defaults()',
-          isNamed: true,
-        );
+        const original = ParameterInfo(name: 'config', type: 'Configuration', isRequired: false, defaultValue: 'Configuration.defaults()', isNamed: true);
 
         final json = original.toJson();
         final restored = ParameterInfo.fromJson(json);
@@ -105,17 +83,8 @@ void main() {
         final ctor = ConstructorInfo(
           hasParameters: true,
           parameters: [
-            const ParameterInfo(
-              name: 'logger',
-              type: 'Logger',
-              isRequired: true,
-            ),
-            const ParameterInfo(
-              name: 'config',
-              type: 'Config',
-              isRequired: false,
-              isNamed: true,
-            ),
+            const ParameterInfo(name: 'logger', type: 'Logger', isRequired: true),
+            const ParameterInfo(name: 'config', type: 'Config', isRequired: false, isNamed: true),
           ],
         );
 
@@ -131,13 +100,7 @@ void main() {
         final json = {
           'hasParameters': true,
           'parameters': [
-            {
-              'name': 'service',
-              'type': 'Service',
-              'isRequired': true,
-              'defaultValue': null,
-              'isNamed': false,
-            },
+            {'name': 'service', 'type': 'Service', 'isRequired': true, 'defaultValue': null, 'isNamed': false},
           ],
         };
 
@@ -152,18 +115,8 @@ void main() {
         final original = ConstructorInfo(
           hasParameters: true,
           parameters: [
-            const ParameterInfo(
-              name: 'dep1',
-              type: 'Dep1',
-              isRequired: true,
-            ),
-            const ParameterInfo(
-              name: 'dep2',
-              type: 'Dep2',
-              isRequired: false,
-              defaultValue: 'Dep2()',
-              isNamed: true,
-            ),
+            const ParameterInfo(name: 'dep1', type: 'Dep1', isRequired: true),
+            const ParameterInfo(name: 'dep2', type: 'Dep2', isRequired: false, defaultValue: 'Dep2()', isNamed: true),
           ],
         );
 
@@ -204,13 +157,7 @@ void main() {
           sourceFile: 'lib/handlers/payment_handler.dart',
           constructor: ConstructorInfo(
             hasParameters: true,
-            parameters: [
-              const ParameterInfo(
-                name: 'paymentService',
-                type: 'PaymentService',
-                isRequired: true,
-              ),
-            ],
+            parameters: [const ParameterInfo(name: 'paymentService', type: 'PaymentService', isRequired: true)],
           ),
         );
 
@@ -229,10 +176,7 @@ void main() {
           'priority': 50,
           'busName': 'test',
           'sourceFile': 'lib/handlers.dart',
-          'constructor': {
-            'hasParameters': false,
-            'parameters': [],
-          },
+          'constructor': {'hasParameters': false, 'parameters': []},
         };
 
         final handler = HandlerInfo.fromJson(json);
@@ -254,13 +198,7 @@ void main() {
           sourceFile: 'lib/handlers/order.dart',
           constructor: ConstructorInfo(
             hasParameters: true,
-            parameters: [
-              const ParameterInfo(
-                name: 'repo',
-                type: 'OrderRepository',
-                isRequired: true,
-              ),
-            ],
+            parameters: [const ParameterInfo(name: 'repo', type: 'OrderRepository', isRequired: true)],
           ),
         );
 
@@ -330,13 +268,7 @@ void main() {
           sourceFile: 'lib/middleware/auth.dart',
           constructor: ConstructorInfo(
             hasParameters: true,
-            parameters: [
-              const ParameterInfo(
-                name: 'authService',
-                type: 'AuthService',
-                isRequired: true,
-              ),
-            ],
+            parameters: [const ParameterInfo(name: 'authService', type: 'AuthService', isRequired: true)],
           ),
         );
 
@@ -354,10 +286,7 @@ void main() {
           'priority': 75,
           'busName': null,
           'sourceFile': 'lib/middleware.dart',
-          'constructor': {
-            'hasParameters': false,
-            'parameters': [],
-          },
+          'constructor': {'hasParameters': false, 'parameters': []},
         };
 
         final middleware = MiddlewareInfo.fromJson(json);
@@ -378,18 +307,8 @@ void main() {
           constructor: ConstructorInfo(
             hasParameters: true,
             parameters: [
-              const ParameterInfo(
-                name: 'cache',
-                type: 'Cache',
-                isRequired: true,
-              ),
-              const ParameterInfo(
-                name: 'ttl',
-                type: 'Duration',
-                isRequired: false,
-                defaultValue: 'Duration(minutes: 5)',
-                isNamed: true,
-              ),
+              const ParameterInfo(name: 'cache', type: 'Cache', isRequired: true),
+              const ParameterInfo(name: 'ttl', type: 'Duration', isRequired: false, defaultValue: 'Duration(minutes: 5)', isNamed: true),
             ],
           ),
         );
@@ -411,17 +330,8 @@ void main() {
           constructor: ConstructorInfo(
             hasParameters: true,
             parameters: [
-              const ParameterInfo(
-                name: 'map',
-                type: 'Map<String, List<int>>',
-                isRequired: true,
-              ),
-              const ParameterInfo(
-                name: 'callback',
-                type: 'void Function(String, int)',
-                isRequired: false,
-                isNamed: true,
-              ),
+              const ParameterInfo(name: 'map', type: 'Map<String, List<int>>', isRequired: true),
+              const ParameterInfo(name: 'callback', type: 'void Function(String, int)', isRequired: false, isNamed: true),
             ],
           ),
         );
@@ -450,11 +360,7 @@ void main() {
       });
 
       test('handles special characters in names', () {
-        final param = ParameterInfo(
-          name: 'value_with_underscore',
-          type: 'Type\$WithDollar',
-          isRequired: true,
-        );
+        final param = ParameterInfo(name: 'value_with_underscore', type: 'Type\$WithDollar', isRequired: true);
 
         final json = param.toJson();
         final restored = ParameterInfo.fromJson(json);
@@ -465,14 +371,8 @@ void main() {
 
       test('handles very long default values', () {
         final longDefault = 'SomeClass.veryLongMethodName(parameter1: "value1", parameter2: 42, parameter3: true, parameter4: [1, 2, 3, 4, 5])';
-        
-        final param = ParameterInfo(
-          name: 'config',
-          type: 'Config',
-          isRequired: false,
-          defaultValue: longDefault,
-          isNamed: true,
-        );
+
+        final param = ParameterInfo(name: 'config', type: 'Config', isRequired: false, defaultValue: longDefault, isNamed: true);
 
         final json = param.toJson();
         final restored = ParameterInfo.fromJson(json);
