@@ -1,4 +1,4 @@
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:build/build.dart';
 import 'package:raiser_annotation/raiser_annotation.dart';
 import 'package:source_gen/source_gen.dart';
@@ -11,12 +11,8 @@ import 'models/parameter_info.dart';
 /// and generates registration code.
 class RaiserMiddlewareGenerator extends GeneratorForAnnotation<RaiserMiddleware> {
   @override
-  String generateForAnnotatedElement(
-    Element element,
-    ConstantReader annotation,
-    BuildStep buildStep,
-  ) {
-    final middlewareInfo = extractMiddlewareInfo(element, annotation, buildStep);
+  String generateForAnnotatedElement(Element2 element, ConstantReader annotation, BuildStep buildStep) {
+    final middlewareInfo = extractMiddlewareInfo(element.firstFragment.element, annotation, buildStep);
     // Generate registration code
     return _generateRegistrationCode(middlewareInfo);
   }
@@ -25,11 +21,7 @@ class RaiserMiddlewareGenerator extends GeneratorForAnnotation<RaiserMiddleware>
   ///
   /// This method is used by both the individual generator and the
   /// aggregating builder to extract middleware metadata.
-  MiddlewareInfo extractMiddlewareInfo(
-    Element element,
-    ConstantReader annotation,
-    BuildStep buildStep,
-  ) {
+  MiddlewareInfo extractMiddlewareInfo(Element2 element, ConstantReader annotation, BuildStep buildStep) {
     // Validate the annotated element
     final classElement = _validateElement(element);
 
@@ -42,7 +34,7 @@ class RaiserMiddlewareGenerator extends GeneratorForAnnotation<RaiserMiddleware>
 
     // Build MiddlewareInfo
     return MiddlewareInfo(
-      className: classElement.name ?? '',
+      className: classElement.name3 ?? '',
       priority: priority,
       busName: busName,
       sourceFile: buildStep.inputId.path,
@@ -51,13 +43,10 @@ class RaiserMiddlewareGenerator extends GeneratorForAnnotation<RaiserMiddleware>
   }
 
   /// Validates that the annotated element is a valid middleware class.
-  ClassElement _validateElement(Element element) {
+  ClassElement2 _validateElement(Element2 element) {
     // Check if element is a class
-    if (element is! ClassElement) {
-      throw InvalidGenerationSourceError(
-        '@RaiserMiddleware can only be applied to classes. Found: ${element.kind.displayName}',
-        element: element,
-      );
+    if (element is! ClassElement2) {
+      throw InvalidGenerationSourceError('@RaiserMiddleware can only be applied to classes. Found: ${element.kind.displayName}');
     }
 
     final classElement = element;
@@ -66,26 +55,22 @@ class RaiserMiddlewareGenerator extends GeneratorForAnnotation<RaiserMiddleware>
     if (classElement.isAbstract) {
       throw InvalidGenerationSourceError(
         "@RaiserMiddleware cannot be applied to abstract classes. "
-        "'${classElement.name}' must be concrete.",
-        element: element,
+        "'${classElement.name3}' must be concrete.",
       );
     }
 
     // Check for accessible constructor
     if (!_hasAccessibleConstructor(classElement)) {
-      throw InvalidGenerationSourceError(
-        "Class '${classElement.name}' must have an accessible constructor for registration.",
-        element: element,
-      );
+      throw InvalidGenerationSourceError("Class '${classElement.name3}' must have an accessible constructor for registration.");
     }
 
     return classElement;
   }
 
   /// Checks if the class has an accessible (public) constructor.
-  bool _hasAccessibleConstructor(ClassElement classElement) {
+  bool _hasAccessibleConstructor(ClassElement2 classElement) {
     // Look for any public constructor
-    for (final constructor in classElement.constructors) {
+    for (final constructor in classElement.constructors2) {
       if (!constructor.isPrivate && !constructor.isFactory) {
         return true;
       }
@@ -94,14 +79,14 @@ class RaiserMiddlewareGenerator extends GeneratorForAnnotation<RaiserMiddleware>
   }
 
   /// Analyzes the constructor for dependency injection support.
-  ConstructorInfo _analyzeConstructor(ClassElement classElement) {
+  ConstructorInfo _analyzeConstructor(ClassElement2 classElement) {
     // Find the primary constructor (unnamed or first public)
-    ConstructorElement? primaryConstructor;
+    ConstructorElement2? primaryConstructor;
 
-    for (final constructor in classElement.constructors) {
+    for (final constructor in classElement.constructors2) {
       if (!constructor.isPrivate && !constructor.isFactory) {
         // Prefer unnamed constructor
-        if (constructor.name?.isEmpty ?? true) {
+        if ((constructor.name3 ?? '').isEmpty) {
           primaryConstructor = constructor;
           break;
         }
@@ -123,7 +108,7 @@ class RaiserMiddlewareGenerator extends GeneratorForAnnotation<RaiserMiddleware>
     // Extract parameter information
     final parameterInfos = parameters.map((param) {
       return ParameterInfo(
-        name: param.name ?? '',
+        name: param.name3 ?? '',
         type: param.type.getDisplayString(),
         isRequired: param.isRequired,
         defaultValue: param.defaultValueCode,
@@ -131,10 +116,7 @@ class RaiserMiddlewareGenerator extends GeneratorForAnnotation<RaiserMiddleware>
       );
     }).toList();
 
-    return ConstructorInfo(
-      hasParameters: true,
-      parameters: parameterInfos,
-    );
+    return ConstructorInfo(hasParameters: true, parameters: parameterInfos);
   }
 
   /// Generates the registration code for a middleware.
@@ -155,23 +137,15 @@ class RaiserMiddlewareGenerator extends GeneratorForAnnotation<RaiserMiddleware>
     if (!info.constructor.hasParameters) {
       // Direct instantiation (Requirement 5.1)
       if (info.priority != 0) {
-        buffer.writeln(
-          'bus.addMiddleware(${info.className}(), priority: ${info.priority});',
-        );
+        buffer.writeln('bus.addMiddleware(${info.className}(), priority: ${info.priority});');
       } else {
-        buffer.writeln(
-          'bus.addMiddleware(${info.className}());',
-        );
+        buffer.writeln('bus.addMiddleware(${info.className}());');
       }
     } else {
       // Factory function needed - generate placeholder comment
       // Full factory generation will be in CodeEmitter
-      buffer.writeln(
-        '// Requires factory function for dependency injection',
-      );
-      buffer.writeln(
-        '// Parameters: ${info.constructor.parameters.map((p) => '${p.type} ${p.name}').join(', ')}',
-      );
+      buffer.writeln('// Requires factory function for dependency injection');
+      buffer.writeln('// Parameters: ${info.constructor.parameters.map((p) => '${p.type} ${p.name}').join(', ')}');
     }
 
     return buffer.toString();

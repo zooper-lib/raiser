@@ -3,7 +3,6 @@ import 'dart:convert';
 
 import 'package:build/build.dart';
 import 'package:glob/glob.dart';
-import 'package:raiser_annotation/raiser_annotation.dart';
 import 'package:source_gen/source_gen.dart';
 
 import 'handler_generator.dart';
@@ -18,8 +17,8 @@ import 'models/middleware_info.dart';
 /// 1. CollectingBuilder: Scans each .dart file, extracts metadata, writes .raiser.json
 /// 2. AggregatingBuilder: Reads all .raiser.json files, generates single raiser.g.dart
 class RaiserCollectingBuilder implements Builder {
-  final _handlerChecker = const TypeChecker.typeNamed(RaiserHandler);
-  final _middlewareChecker = const TypeChecker.typeNamed(RaiserMiddleware);
+  static final _handlerChecker = TypeChecker.fromUrl('package:raiser_annotation/src/raiser_handler.dart#RaiserHandler');
+  static final _middlewareChecker = TypeChecker.fromUrl('package:raiser_annotation/src/raiser_middleware.dart#RaiserMiddleware');
   final _handlerGenerator = RaiserHandlerGenerator();
   final _middlewareGenerator = RaiserMiddlewareGenerator();
 
@@ -49,7 +48,7 @@ class RaiserCollectingBuilder implements Builder {
     // Collect all handlers
     for (final annotatedElement in libraryReader.annotatedWith(_handlerChecker)) {
       try {
-        final info = _handlerGenerator.extractHandlerInfo(annotatedElement.element, annotatedElement.annotation, buildStep);
+        final info = _handlerGenerator.extractHandlerInfo(annotatedElement.element.firstFragment.element, annotatedElement.annotation, buildStep);
         handlers.add(info.toJson());
       } on InvalidGenerationSourceError {
         // Skip invalid elements, errors will be reported by validation
@@ -59,7 +58,7 @@ class RaiserCollectingBuilder implements Builder {
     // Collect all middleware
     for (final annotatedElement in libraryReader.annotatedWith(_middlewareChecker)) {
       try {
-        final info = _middlewareGenerator.extractMiddlewareInfo(annotatedElement.element, annotatedElement.annotation, buildStep);
+        final info = _middlewareGenerator.extractMiddlewareInfo(annotatedElement.element.firstFragment.element, annotatedElement.annotation, buildStep);
         middleware.add(info.toJson());
       } on InvalidGenerationSourceError {
         // Skip invalid elements, errors will be reported by validation
@@ -71,8 +70,10 @@ class RaiserCollectingBuilder implements Builder {
       // Collect imports from the source file - only event type imports are needed
       // We need imports that define the event types used in handlers
       final sourceImports = <String>[];
-      for (final importedLibrary in library.firstFragment.importedLibraries) {
-        final source = importedLibrary.firstFragment.source.uri.toString();
+      for (final import in library.firstFragment.libraryImports2) {
+        final importedLib = import.importedLibrary2;
+        if (importedLib == null) continue;
+        final source = importedLib.uri.toString();
         // Only include imports that likely contain event definitions
         // Skip dart:, raiser packages, and service-like files
         if (!source.startsWith('dart:') &&

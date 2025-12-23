@@ -1,4 +1,4 @@
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
 import 'package:raiser_annotation/raiser_annotation.dart';
@@ -12,12 +12,8 @@ import 'models/parameter_info.dart';
 /// and generates registration code.
 class RaiserHandlerGenerator extends GeneratorForAnnotation<RaiserHandler> {
   @override
-  String generateForAnnotatedElement(
-    Element element,
-    ConstantReader annotation,
-    BuildStep buildStep,
-  ) {
-    final handlerInfo = extractHandlerInfo(element, annotation, buildStep);
+  String generateForAnnotatedElement(Element2 element, ConstantReader annotation, BuildStep buildStep) {
+    final handlerInfo = extractHandlerInfo(element.firstFragment.element, annotation, buildStep);
     // Generate registration code
     return _generateRegistrationCode(handlerInfo);
   }
@@ -26,11 +22,7 @@ class RaiserHandlerGenerator extends GeneratorForAnnotation<RaiserHandler> {
   ///
   /// This method is used by both the individual generator and the
   /// aggregating builder to extract handler metadata.
-  HandlerInfo extractHandlerInfo(
-    Element element,
-    ConstantReader annotation,
-    BuildStep buildStep,
-  ) {
+  HandlerInfo extractHandlerInfo(Element2 element, ConstantReader annotation, BuildStep buildStep) {
     // Validate the annotated element
     final classElement = _validateElement(element);
 
@@ -46,7 +38,7 @@ class RaiserHandlerGenerator extends GeneratorForAnnotation<RaiserHandler> {
 
     // Build HandlerInfo
     return HandlerInfo(
-      className: classElement.name ?? '',
+      className: classElement.name3 ?? '',
       eventType: eventType,
       priority: priority,
       busName: busName,
@@ -56,13 +48,10 @@ class RaiserHandlerGenerator extends GeneratorForAnnotation<RaiserHandler> {
   }
 
   /// Validates that the annotated element is a valid handler class.
-  ClassElement _validateElement(Element element) {
+  ClassElement2 _validateElement(Element2 element) {
     // Check if element is a class (Requirement 6.1)
-    if (element is! ClassElement) {
-      throw InvalidGenerationSourceError(
-        '@RaiserHandler can only be applied to classes. Found: ${element.kind.displayName}',
-        element: element,
-      );
+    if (element is! ClassElement2) {
+      throw InvalidGenerationSourceError('@RaiserHandler can only be applied to classes. Found: ${element.kind.displayName}');
     }
 
     final classElement = element;
@@ -71,35 +60,28 @@ class RaiserHandlerGenerator extends GeneratorForAnnotation<RaiserHandler> {
     if (classElement.isAbstract) {
       throw InvalidGenerationSourceError(
         "@RaiserHandler cannot be applied to abstract classes. "
-        "'${classElement.name}' must be concrete.",
-        element: element,
+        "'${classElement.name3}' must be concrete.",
       );
     }
 
     // Check if class extends EventHandler<T> (Requirement 1.2)
     if (!_extendsEventHandler(classElement)) {
-      throw InvalidGenerationSourceError(
-        "Class '${classElement.name}' must extend EventHandler<T> to use @RaiserHandler.",
-        element: element,
-      );
+      throw InvalidGenerationSourceError("Class '${classElement.name3}' must extend EventHandler<T> to use @RaiserHandler.");
     }
 
     // Check for accessible constructor (Requirement 6.3)
     if (!_hasAccessibleConstructor(classElement)) {
-      throw InvalidGenerationSourceError(
-        "Class '${classElement.name}' must have an accessible constructor for registration.",
-        element: element,
-      );
+      throw InvalidGenerationSourceError("Class '${classElement.name3}' must have an accessible constructor for registration.");
     }
 
     return classElement;
   }
 
   /// Checks if the class extends EventHandler<T>.
-  bool _extendsEventHandler(ClassElement classElement) {
+  bool _extendsEventHandler(ClassElement2 classElement) {
     // Check supertype chain for EventHandler
     for (final supertype in classElement.allSupertypes) {
-      if (supertype.element.name == 'EventHandler') {
+      if (supertype.element3.name3 == 'EventHandler') {
         return true;
       }
     }
@@ -107,9 +89,9 @@ class RaiserHandlerGenerator extends GeneratorForAnnotation<RaiserHandler> {
   }
 
   /// Checks if the class has an accessible (public) constructor.
-  bool _hasAccessibleConstructor(ClassElement classElement) {
+  bool _hasAccessibleConstructor(ClassElement2 classElement) {
     // Look for any public constructor
-    for (final constructor in classElement.constructors) {
+    for (final constructor in classElement.constructors2) {
       if (!constructor.isPrivate && !constructor.isFactory) {
         return true;
       }
@@ -118,10 +100,10 @@ class RaiserHandlerGenerator extends GeneratorForAnnotation<RaiserHandler> {
   }
 
   /// Extracts the event type T from EventHandler<T>.
-  String _extractEventType(ClassElement classElement) {
+  String _extractEventType(ClassElement2 classElement) {
     // Find EventHandler in the supertype chain
     for (final supertype in classElement.allSupertypes) {
-      if (supertype.element.name == 'EventHandler') {
+      if (supertype.element3.name3 == 'EventHandler') {
         final typeArgs = supertype.typeArguments;
         if (typeArgs.isNotEmpty) {
           final eventType = typeArgs.first;
@@ -129,23 +111,13 @@ class RaiserHandlerGenerator extends GeneratorForAnnotation<RaiserHandler> {
           // Check if the type is resolvable (not dynamic or unresolved)
           if (eventType is DynamicType) {
             throw InvalidGenerationSourceError(
-              "Cannot resolve event type for '${classElement.name}'. "
+              "Cannot resolve event type for '${classElement.name3}'. "
               "Ensure the generic type parameter is a concrete type.",
-              element: classElement,
             );
           }
 
           // Get the type name with proper handling
           final typeName = eventType.getDisplayString();
-
-          // Verify it's not a type parameter (unresolved generic)
-          if (eventType is TypeParameterType) {
-            throw InvalidGenerationSourceError(
-              "Cannot resolve event type for '${classElement.name}'. "
-              "Ensure the generic type parameter is a concrete type, not a type variable.",
-              element: classElement,
-            );
-          }
 
           return typeName;
         }
@@ -153,21 +125,20 @@ class RaiserHandlerGenerator extends GeneratorForAnnotation<RaiserHandler> {
     }
 
     throw InvalidGenerationSourceError(
-      "Cannot resolve event type for '${classElement.name}'. "
+      "Cannot resolve event type for '${classElement.name3}'. "
       "Ensure the class extends EventHandler<T> with a concrete type.",
-      element: classElement,
     );
   }
 
   /// Analyzes the constructor for dependency injection support.
-  ConstructorInfo _analyzeConstructor(ClassElement classElement) {
+  ConstructorInfo _analyzeConstructor(ClassElement2 classElement) {
     // Find the primary constructor (unnamed or first public)
-    ConstructorElement? primaryConstructor;
+    ConstructorElement2? primaryConstructor;
 
-    for (final constructor in classElement.constructors) {
+    for (final constructor in classElement.constructors2) {
       if (!constructor.isPrivate && !constructor.isFactory) {
         // Prefer unnamed constructor
-        if (constructor.name?.isEmpty ?? true) {
+        if ((constructor.name3 ?? '').isEmpty) {
           primaryConstructor = constructor;
           break;
         }
@@ -189,7 +160,7 @@ class RaiserHandlerGenerator extends GeneratorForAnnotation<RaiserHandler> {
     // Extract parameter information
     final parameterInfos = parameters.map((param) {
       return ParameterInfo(
-        name: param.name ?? '',
+        name: param.name3 ?? '',
         type: param.type.getDisplayString(),
         isRequired: param.isRequired,
         defaultValue: param.defaultValueCode,
@@ -197,10 +168,7 @@ class RaiserHandlerGenerator extends GeneratorForAnnotation<RaiserHandler> {
       );
     }).toList();
 
-    return ConstructorInfo(
-      hasParameters: true,
-      parameters: parameterInfos,
-    );
+    return ConstructorInfo(hasParameters: true, parameters: parameterInfos);
   }
 
   /// Generates the registration code for a handler.
@@ -221,23 +189,15 @@ class RaiserHandlerGenerator extends GeneratorForAnnotation<RaiserHandler> {
     if (!info.constructor.hasParameters) {
       // Direct instantiation (Requirement 5.1)
       if (info.priority != 0) {
-        buffer.writeln(
-          'bus.register<${info.eventType}>(${info.className}(), priority: ${info.priority});',
-        );
+        buffer.writeln('bus.register<${info.eventType}>(${info.className}(), priority: ${info.priority});');
       } else {
-        buffer.writeln(
-          'bus.register<${info.eventType}>(${info.className}());',
-        );
+        buffer.writeln('bus.register<${info.eventType}>(${info.className}());');
       }
     } else {
       // Factory function needed - generate placeholder comment
       // Full factory generation will be in CodeEmitter
-      buffer.writeln(
-        '// Requires factory function for dependency injection',
-      );
-      buffer.writeln(
-        '// Parameters: ${info.constructor.parameters.map((p) => '${p.type} ${p.name}').join(', ')}',
-      );
+      buffer.writeln('// Requires factory function for dependency injection');
+      buffer.writeln('// Parameters: ${info.constructor.parameters.map((p) => '${p.type} ${p.name}').join(', ')}');
     }
 
     return buffer.toString();

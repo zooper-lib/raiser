@@ -14,8 +14,8 @@ topics:
   - build-runner
 
 dependencies:
-  analyzer: ^9.0.0
-  build: ^4.0.0
+  analyzer: '>=7.0.0 <9.0.0'
+  build: ^3.0.0
   glob: ^2.1.0
   raiser:
     path: ../raiser
