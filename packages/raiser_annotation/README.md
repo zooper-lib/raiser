@@ -1,5 +1,9 @@
 # Raiser Annotation
 
+<p align="center">
+  <img src="icon.png" alt="Raiser Logo" width="200"/>
+</p>
+
 Annotations for the [Raiser](https://pub.dev/packages/raiser) domain event library code generator.
 
 ## Overview

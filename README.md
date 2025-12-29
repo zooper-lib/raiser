@@ -1,5 +1,9 @@
 # Raiser
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Zooper/raiser/main/assets/raiser-icon.svg" alt="Raiser Logo" width="200"/>
+</p>
+
 A type-safe, async-first domain event library for Dart. Raiser provides a clean event bus implementation following clean architecture principles, perfect for decoupling components in your application.
 
 ## Features

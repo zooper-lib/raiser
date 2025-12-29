@@ -1,5 +1,9 @@
 # Raiser Generator
 
+<p align="center">
+  <img src="icon.png" alt="Raiser Logo" width="200"/>
+</p>
+
 Code generator for the [Raiser](https://pub.dev/packages/raiser) domain event library. Automatically discovers and registers event handlers and middleware annotated with `@RaiserHandler` and `@RaiserMiddleware`.
 
 ## Features
