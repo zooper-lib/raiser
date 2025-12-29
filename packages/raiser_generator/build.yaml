@@ -7,6 +7,14 @@ builders:
     auto_apply: dependents
     build_to: cache
     runs_before: ["raiser_generator|raiser_aggregating"]
+    applies_builders: ["source_gen|combining_builder"]
+    defaults:
+      generate_for:
+        exclude:
+          - "**/*.g.dart"
+          - "**/*.freezed.dart"
+          - "**/*.gr.dart"
+          - "**/*.config.dart"
 
   # Phase 2: Aggregate all metadata into a single output file
   raiser_aggregating:
