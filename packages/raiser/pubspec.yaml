@@ -7,6 +7,8 @@ issue_tracker: https://github.com/zooper/raiser/issues
 environment:
   sdk: ^3.10.4
 
+resolution: workspace
+
 topics:
   - events
   - event-bus

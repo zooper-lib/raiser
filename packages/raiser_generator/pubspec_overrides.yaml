@@ -1,9 +1,0 @@
-# Local development overrides for the monorepo.
-#
-# This file is ignored by pub.dev on publish, but lets you work on the
-# generator against the local workspace packages.
-dependency_overrides:
-  raiser:
-    path: ../raiser
-  raiser_annotation:
-    path: ../raiser_annotation

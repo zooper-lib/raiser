@@ -7,7 +7,12 @@ issue_tracker: https://github.com/zooper/raiser/issues
 environment:
   sdk: ^3.10.4
 
+resolution: workspace
+
 topics:
   - events
   - annotations
   - code-generation
+
+dev_dependencies:
+  test: ^1.25.6
