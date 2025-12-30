@@ -1,7 +1,7 @@
 # Raiser
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Zooper/raiser/main/assets/raiser-icon.svg" alt="Raiser Logo" width="200"/>
+  <img src="icon.png" alt="Raiser Logo" width="200"/>
 </p>
 
 A type-safe, async-first domain event library for Dart. Raiser provides a clean event bus implementation following clean architecture principles, perfect for decoupling components in your application.
@@ -11,6 +11,7 @@ A type-safe, async-first domain event library for Dart. Raiser provides a clean 
 - **Type-safe event handling** — Generic handlers ensure compile-time type checking
 - **Async-first design** — All handlers are asynchronous by default
 - **Priority-based ordering** — Control handler execution order with priorities
+- **Middleware support** — Wrap handler execution with cross-cutting concerns
 - **Flexible error strategies** — Choose how errors are handled during event propagation
 - **Subscription management** — Cancel handlers when no longer needed
 - **Domain event metadata** — Built-in support for event IDs, timestamps, and aggregate IDs
@@ -18,11 +19,9 @@ A type-safe, async-first domain event library for Dart. Raiser provides a clean 
 
 ## Installation
 
-Add Raiser to your `pubspec.yaml`:
-
 ```yaml
 dependencies:
-  raiser: <latest>
+  raiser: ^1.0.0
 ```
 
 ## Quick Start
@@ -36,6 +35,13 @@ class UserCreated extends DomainEvent {
   final String email;
 
   UserCreated({required this.userId, required this.email});
+
+  @override
+  Map<String, dynamic> toMetadataMap() => {
+    ...super.toMetadataMap(),
+    'userId': userId,
+    'email': email,
+  };
 }
 
 void main() async {
@@ -51,9 +57,7 @@ void main() async {
 }
 ```
 
-## Core Concepts
-
-### Domain Events
+## Domain Events
 
 All events extend `DomainEvent`, which provides automatic metadata:
 
@@ -62,8 +66,6 @@ All events extend `DomainEvent`, which provides automatic metadata:
 | `id` | Unique identifier (auto-generated) |
 | `timestamp` | Creation time (auto-captured) |
 | `aggregateId` | Optional link to a domain aggregate |
-
-Override `toMetadataMap()` to include your event's fields for serialization:
 
 ```dart
 class OrderPlaced extends DomainEvent {
@@ -81,11 +83,11 @@ class OrderPlaced extends DomainEvent {
 }
 ```
 
-### Event Handlers
+## Event Handlers
 
-Register handlers using either function callbacks or class-based handlers.
+### Function Handlers
 
-**Function handlers** — Quick and inline:
+Quick inline handlers:
 
 ```dart
 bus.on<UserCreated>((event) async {
@@ -93,7 +95,9 @@ bus.on<UserCreated>((event) async {
 });
 ```
 
-**Class-based handlers** — Better for complex logic and testing:
+### Class-Based Handlers
+
+Better for complex logic and testing:
 
 ```dart
 class WelcomeEmailHandler implements EventHandler<UserCreated> {
@@ -108,26 +112,44 @@ bus.register<UserCreated>(WelcomeEmailHandler());
 
 ### Handler Priority
 
-Control execution order with priorities. Higher values execute first:
+Higher values execute first:
 
 ```dart
-bus.on<OrderPlaced>((e) async => print('Runs second'), priority: 0);
-bus.on<OrderPlaced>((e) async => print('Runs first'), priority: 10);
-bus.on<OrderPlaced>((e) async => print('Runs last'), priority: -5);
+bus.on<OrderPlaced>((e) async => print('Second'), priority: 0);
+bus.on<OrderPlaced>((e) async => print('First'), priority: 10);
+bus.on<OrderPlaced>((e) async => print('Last'), priority: -5);
 ```
 
-Handlers with the same priority execute in registration order.
+## Middleware
 
-### Subscriptions
+Wrap handler execution with cross-cutting concerns like logging, timing, or validation:
 
-Both `on()` and `register()` return a `Subscription` for lifecycle management:
+```dart
+// Add middleware that wraps all handler execution
+bus.addMiddleware((event, next) async {
+  print('Before: ${event.runtimeType}');
+  await next();
+  print('After: ${event.runtimeType}');
+}, priority: 100);
+
+// Middleware with higher priority wraps those with lower priority
+bus.addMiddleware((event, next) async {
+  final stopwatch = Stopwatch()..start();
+  await next();
+  print('Took ${stopwatch.elapsedMilliseconds}ms');
+}, priority: 50);
+```
+
+## Subscriptions
+
+Both `on()`, `register()`, and `addMiddleware()` return a `Subscription`:
 
 ```dart
 final subscription = bus.on<UserCreated>((event) async {
   // Handle event
 });
 
-// Later, stop receiving events
+// Stop receiving events
 subscription.cancel();
 
 // Check status
@@ -136,12 +158,12 @@ print(subscription.isCancelled); // true
 
 ## Error Handling
 
-Configure how the EventBus handles exceptions with `ErrorStrategy`:
+Configure error behavior with `ErrorStrategy`:
 
 | Strategy | Behavior |
 |----------|----------|
 | `stop` | Halt on first error, rethrow immediately (default) |
-| `continueOnError` | Run all handlers, throw `AggregateException` with collected errors |
+| `continueOnError` | Run all handlers, throw `AggregateException` |
 | `swallow` | Run all handlers, errors only go to callback |
 
 ```dart
@@ -154,68 +176,37 @@ final bus = EventBus(errorStrategy: ErrorStrategy.continueOnError);
 // Silent failures with logging
 final bus = EventBus(
   errorStrategy: ErrorStrategy.swallow,
-  onError: (error, stackTrace) => logger.error('Handler failed: $error'),
+  onError: (error, stackTrace) => logger.error('Failed: $error'),
 );
 ```
 
 ### AggregateException
 
-When using `continueOnError`, failed handlers result in an `AggregateException`:
+When using `continueOnError`:
 
 ```dart
 try {
   await bus.publish(event);
 } on AggregateException catch (e) {
   print('${e.errors.length} handlers failed');
-  for (final error in e.errors) {
-    print('  - $error');
-  }
 }
 ```
 
-## Advanced Patterns
+## Code Generation
 
-### Aggregate IDs for DDD
+For automatic handler discovery and registration, use the companion packages:
 
-Link events to domain aggregates for event sourcing patterns:
+```yaml
+dependencies:
+  raiser: ^1.0.0
+  raiser_annotation: ^1.0.0
 
-```dart
-await bus.publish(OrderPlaced(
-  orderId: 'order-123',
-  amount: 99.99,
-  aggregateId: 'user-456', // Links to user aggregate
-));
+dev_dependencies:
+  build_runner: ^2.4.0
+  raiser_generator: ^1.0.0
 ```
 
-### Multiple Event Buses
-
-Separate concerns with dedicated buses:
-
-```dart
-final domainBus = EventBus(errorStrategy: ErrorStrategy.stop);
-final integrationBus = EventBus(errorStrategy: ErrorStrategy.continueOnError);
-final notificationBus = EventBus(errorStrategy: ErrorStrategy.swallow);
-```
-
-### Event Replay
-
-Rebuild state by replaying stored events through a new bus:
-
-```dart
-final replayBus = EventBus();
-replayBus.register<OrderPlaced>(orderProjection);
-
-for (final event in storedEvents) {
-  await replayBus.publish(event);
-}
-```
-
-## Examples
-
-See the `/example` folder for complete working examples:
-
-- **raiser_example.dart** — Basic usage, priorities, subscriptions, error handling
-- **advanced_example.dart** — Event sourcing, sagas, projections, multi-bus architecture
+See [raiser_generator](https://pub.dev/packages/raiser_generator) for details.
 
 ## License
 

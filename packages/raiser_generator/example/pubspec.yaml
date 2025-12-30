@@ -1,0 +1,20 @@
+name: raiser_generator_example
+description: Example usage of the Raiser code generator
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  raiser:
+    path: ../../raiser
+  raiser_annotation:
+    path: ../../raiser_annotation
+
+dev_dependencies:
+  build_runner: ^2.4.0
+  raiser_generator:
+    path: ..
+  source_gen: ^4.0.0
+
