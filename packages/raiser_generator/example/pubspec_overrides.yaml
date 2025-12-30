@@ -1,0 +1,8 @@
+# melos_managed_dependency_overrides: raiser,raiser_annotation,raiser_generator
+dependency_overrides:
+  raiser:
+    path: ../../raiser
+  raiser_annotation:
+    path: ../../raiser_annotation
+  raiser_generator:
+    path: ..

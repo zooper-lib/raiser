@@ -1,0 +1,32 @@
+name: raiser_workspace
+publish_to: none
+
+environment:
+  sdk: ^3.10.4
+
+workspace:
+  - packages/raiser
+  - packages/raiser_annotation
+  - packages/raiser_generator
+
+dev_dependencies:
+  melos: ^7.3.0
+
+melos:
+  ignore:
+    - packages/**/example
+
+  scripts:
+    analyze:
+      run: dart analyze .
+      description: Run static analysis in all packages.
+      exec:
+        failFast: true
+
+    test:
+      run: dart test
+      description: Run all package tests.
+      exec:
+        failFast: true
+      packageFilters:
+        dirExists: test

@@ -1,0 +1,21 @@
+name: raiser
+description: A type-safe, async-first domain event library for Dart. Clean event bus implementation following clean architecture principles.
+version: 1.0.0
+repository: https://github.com/zooper/raiser
+issue_tracker: https://github.com/zooper/raiser/issues
+
+environment:
+  sdk: ^3.10.4
+
+resolution: workspace
+
+topics:
+  - events
+  - event-bus
+  - domain-driven-design
+  - clean-architecture
+  - pub-sub
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.25.6
