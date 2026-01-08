@@ -10,7 +10,7 @@ import 'package:raiser/raiser.dart';
 // ============================================================================
 
 /// Basic domain event for user creation
-class UserCreated extends DomainEvent {
+class UserCreated extends RaiserEvent {
   final String userId;
   final String email;
 
@@ -18,14 +18,14 @@ class UserCreated extends DomainEvent {
 
   @override
   Map<String, dynamic> toMetadataMap() => {
-        ...super.toMetadataMap(),
-        'userId': userId,
-        'email': email,
-      };
+    ...super.toMetadataMap(),
+    'userId': userId,
+    'email': email,
+  };
 }
 
 /// Event for order placement with aggregate ID
-class OrderPlaced extends DomainEvent {
+class OrderPlaced extends RaiserEvent {
   final String orderId;
   final double amount;
   final List<String> items;
@@ -39,15 +39,15 @@ class OrderPlaced extends DomainEvent {
 
   @override
   Map<String, dynamic> toMetadataMap() => {
-        ...super.toMetadataMap(),
-        'orderId': orderId,
-        'amount': amount,
-        'items': items,
-      };
+    ...super.toMetadataMap(),
+    'orderId': orderId,
+    'amount': amount,
+    'items': items,
+  };
 }
 
 /// Event for payment processing
-class PaymentProcessed extends DomainEvent {
+class PaymentProcessed extends RaiserEvent {
   final String paymentId;
   final String orderId;
   final bool success;
@@ -60,11 +60,11 @@ class PaymentProcessed extends DomainEvent {
 
   @override
   Map<String, dynamic> toMetadataMap() => {
-        ...super.toMetadataMap(),
-        'paymentId': paymentId,
-        'orderId': orderId,
-        'success': success,
-      };
+    ...super.toMetadataMap(),
+    'paymentId': paymentId,
+    'orderId': orderId,
+    'success': success,
+  };
 }
 
 // ============================================================================
@@ -116,7 +116,6 @@ void main() async {
   print('\n✅ All examples completed!');
 }
 
-
 /// Basic usage with function handlers
 Future<void> basicExample() async {
   print('\n--- BASIC EXAMPLE ---');
@@ -129,10 +128,9 @@ Future<void> basicExample() async {
   });
 
   // Publish an event
-  await bus.publish(UserCreated(
-    userId: 'user-001',
-    email: 'alice@example.com',
-  ));
+  await bus.publish(
+    UserCreated(userId: 'user-001', email: 'alice@example.com'),
+  );
 }
 
 /// Using class-based handlers for better organization
@@ -147,17 +145,16 @@ Future<void> classBasedHandlerExample() async {
   bus.register<OrderPlaced>(InventoryHandler());
 
   // Publish events
-  await bus.publish(UserCreated(
-    userId: 'user-002',
-    email: 'bob@example.com',
-  ));
+  await bus.publish(UserCreated(userId: 'user-002', email: 'bob@example.com'));
 
-  await bus.publish(OrderPlaced(
-    orderId: 'order-001',
-    amount: 99.99,
-    items: ['Widget A', 'Widget B'],
-    aggregateId: 'user-002',
-  ));
+  await bus.publish(
+    OrderPlaced(
+      orderId: 'order-001',
+      amount: 99.99,
+      items: ['Widget A', 'Widget B'],
+      aggregateId: 'user-002',
+    ),
+  );
 }
 
 /// Handler priority demonstration
@@ -221,7 +218,6 @@ Future<void> subscriptionExample() async {
   print('  Total calls: $callCount (should be 1)');
 }
 
-
 /// Error handling strategies demonstration
 Future<void> errorHandlingExamples() async {
   print('\n--- ERROR HANDLING STRATEGIES ---');
@@ -247,11 +243,13 @@ Future<void> errorStrategyStop() async {
   });
 
   try {
-    await bus.publish(PaymentProcessed(
-      paymentId: 'pay-001',
-      orderId: 'order-001',
-      success: false,
-    ));
+    await bus.publish(
+      PaymentProcessed(
+        paymentId: 'pay-001',
+        orderId: 'order-001',
+        success: false,
+      ),
+    );
   } catch (e) {
     print('    ❌ Caught: $e');
   }
@@ -278,11 +276,13 @@ Future<void> errorStrategyContinue() async {
   });
 
   try {
-    await bus.publish(PaymentProcessed(
-      paymentId: 'pay-002',
-      orderId: 'order-002',
-      success: false,
-    ));
+    await bus.publish(
+      PaymentProcessed(
+        paymentId: 'pay-002',
+        orderId: 'order-002',
+        success: false,
+      ),
+    );
   } on AggregateException catch (e) {
     print('    ❌ AggregateException: ${e.errors.length} errors collected');
     for (var i = 0; i < e.errors.length; i++) {
@@ -314,11 +314,9 @@ Future<void> errorStrategySwallow() async {
   });
 
   // No exception thrown
-  await bus.publish(PaymentProcessed(
-    paymentId: 'pay-003',
-    orderId: 'order-003',
-    success: true,
-  ));
+  await bus.publish(
+    PaymentProcessed(paymentId: 'pay-003', orderId: 'order-003', success: true),
+  );
 
   print('    Errors collected via callback: ${errors.length}');
 }
@@ -328,45 +326,55 @@ Future<void> aggregateIdExample() async {
   print('\n--- AGGREGATE ID PATTERN ---');
 
   final bus = EventBus();
-  final userEvents = <DomainEvent>[];
+  final userEvents = <RaiserEvent>[];
 
   // Track all events for a specific user aggregate
   bus.on<UserCreated>((event) async {
     if (event.aggregateId != null) {
       userEvents.add(event);
     }
-    print('  👤 User ${event.userId} created (aggregate: ${event.aggregateId})');
+    print(
+      '  👤 User ${event.userId} created (aggregate: ${event.aggregateId})',
+    );
   });
 
   bus.on<OrderPlaced>((event) async {
     if (event.aggregateId != null) {
       userEvents.add(event);
     }
-    print('  🛒 Order ${event.orderId} placed (aggregate: ${event.aggregateId})');
+    print(
+      '  🛒 Order ${event.orderId} placed (aggregate: ${event.aggregateId})',
+    );
   });
 
   // Events linked to user aggregate
   const userId = 'user-100';
 
-  await bus.publish(UserCreated(
-    userId: userId,
-    email: 'customer@shop.com',
-    aggregateId: userId,
-  ));
+  await bus.publish(
+    UserCreated(
+      userId: userId,
+      email: 'customer@shop.com',
+      aggregateId: userId,
+    ),
+  );
 
-  await bus.publish(OrderPlaced(
-    orderId: 'order-A',
-    amount: 150.00,
-    items: ['Product X'],
-    aggregateId: userId,
-  ));
+  await bus.publish(
+    OrderPlaced(
+      orderId: 'order-A',
+      amount: 150.00,
+      items: ['Product X'],
+      aggregateId: userId,
+    ),
+  );
 
-  await bus.publish(OrderPlaced(
-    orderId: 'order-B',
-    amount: 75.50,
-    items: ['Product Y', 'Product Z'],
-    aggregateId: userId,
-  ));
+  await bus.publish(
+    OrderPlaced(
+      orderId: 'order-B',
+      amount: 75.50,
+      items: ['Product Y', 'Product Z'],
+      aggregateId: userId,
+    ),
+  );
 
   print('  Events for aggregate $userId: ${userEvents.length}');
 }

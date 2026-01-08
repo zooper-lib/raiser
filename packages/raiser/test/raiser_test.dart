@@ -3,8 +3,8 @@ import 'package:test/test.dart';
 
 void main() {
   group('Public API exports', () {
-    test('DomainEvent is exported and usable', () {
-      // Verify DomainEvent can be extended
+    test('RaiserEvent is exported and usable', () {
+      // Verify RaiserEvent can be extended
       final event = _TestEvent();
       expect(event.id, isNotEmpty);
       expect(event.timestamp, isA<DateTime>());
@@ -34,14 +34,17 @@ void main() {
     });
 
     test('AggregateException is exported and usable', () {
-      final exception = AggregateException([Exception('test')], [StackTrace.current]);
+      final exception = AggregateException(
+        [Exception('test')],
+        [StackTrace.current],
+      );
       expect(exception, isA<AggregateException>());
       expect(exception.errors.length, equals(1));
     });
   });
 }
 
-class _TestEvent extends DomainEvent {}
+class _TestEvent extends RaiserEvent {}
 
 class _TestHandler implements EventHandler<_TestEvent> {
   @override

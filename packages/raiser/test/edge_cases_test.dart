@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 /// Edge case and stress tests for the EventBus.
 ///
 /// These tests verify behavior in unusual or extreme scenarios.
-class TestEvent extends DomainEvent {
+class TestEvent extends RaiserEvent {
   final String value;
   TestEvent(this.value);
 
@@ -85,8 +85,14 @@ void main() {
         final order = <int>[];
 
         bus.on<TestEvent>((e) async => order.add(0), priority: 0);
-        bus.on<TestEvent>((e) async => order.add(-2147483648), priority: -2147483648);
-        bus.on<TestEvent>((e) async => order.add(2147483647), priority: 2147483647);
+        bus.on<TestEvent>(
+          (e) async => order.add(-2147483648),
+          priority: -2147483648,
+        );
+        bus.on<TestEvent>(
+          (e) async => order.add(2147483647),
+          priority: 2147483647,
+        );
 
         await bus.publish(TestEvent('test'));
 
@@ -125,7 +131,10 @@ void main() {
 
         await bus.publish(TestEvent('initial'));
 
-        expect(received, equals(['initial', 'nested-1', 'nested-2', 'nested-3']));
+        expect(
+          received,
+          equals(['initial', 'nested-1', 'nested-2', 'nested-3']),
+        );
       });
 
       test('many concurrent publishes complete correctly', () async {
@@ -137,7 +146,9 @@ void main() {
           received.add(event.value);
         });
 
-        await Future.wait(List.generate(100, (i) => bus.publish(TestEvent('event-$i'))));
+        await Future.wait(
+          List.generate(100, (i) => bus.publish(TestEvent('event-$i'))),
+        );
 
         expect(received.length, equals(100));
       });
@@ -207,7 +218,16 @@ void main() {
           throw Exception('error 3');
         });
 
-        expect(() => bus.publish(TestEvent('test')), throwsA(isA<AggregateException>().having((e) => e.errors.length, 'error count', equals(3))));
+        expect(
+          () => bus.publish(TestEvent('test')),
+          throwsA(
+            isA<AggregateException>().having(
+              (e) => e.errors.length,
+              'error count',
+              equals(3),
+            ),
+          ),
+        );
       });
     });
 
@@ -346,7 +366,7 @@ void main() {
 }
 
 /// Another event type for type isolation tests.
-class OtherEvent extends DomainEvent {
+class OtherEvent extends RaiserEvent {
   final int value;
   OtherEvent(this.value);
 

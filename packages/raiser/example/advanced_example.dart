@@ -13,7 +13,7 @@ import 'package:raiser/raiser.dart';
 // DOMAIN EVENTS FOR E-COMMERCE SCENARIO
 // ============================================================================
 
-class CartItemAdded extends DomainEvent {
+class CartItemAdded extends RaiserEvent {
   final String productId;
   final int quantity;
   final double price;
@@ -27,38 +27,38 @@ class CartItemAdded extends DomainEvent {
 
   @override
   Map<String, dynamic> toMetadataMap() => {
-        ...super.toMetadataMap(),
-        'productId': productId,
-        'quantity': quantity,
-        'price': price,
-      };
+    ...super.toMetadataMap(),
+    'productId': productId,
+    'quantity': quantity,
+    'price': price,
+  };
 }
 
-class CartItemRemoved extends DomainEvent {
+class CartItemRemoved extends RaiserEvent {
   final String productId;
 
   CartItemRemoved({required this.productId, super.aggregateId});
 
   @override
   Map<String, dynamic> toMetadataMap() => {
-        ...super.toMetadataMap(),
-        'productId': productId,
-      };
+    ...super.toMetadataMap(),
+    'productId': productId,
+  };
 }
 
-class CheckoutStarted extends DomainEvent {
+class CheckoutStarted extends RaiserEvent {
   final double totalAmount;
 
   CheckoutStarted({required this.totalAmount, super.aggregateId});
 
   @override
   Map<String, dynamic> toMetadataMap() => {
-        ...super.toMetadataMap(),
-        'totalAmount': totalAmount,
-      };
+    ...super.toMetadataMap(),
+    'totalAmount': totalAmount,
+  };
 }
 
-class PaymentReceived extends DomainEvent {
+class PaymentReceived extends RaiserEvent {
   final String transactionId;
   final double amount;
 
@@ -70,22 +70,22 @@ class PaymentReceived extends DomainEvent {
 
   @override
   Map<String, dynamic> toMetadataMap() => {
-        ...super.toMetadataMap(),
-        'transactionId': transactionId,
-        'amount': amount,
-      };
+    ...super.toMetadataMap(),
+    'transactionId': transactionId,
+    'amount': amount,
+  };
 }
 
-class OrderShipped extends DomainEvent {
+class OrderShipped extends RaiserEvent {
   final String trackingNumber;
 
   OrderShipped({required this.trackingNumber, super.aggregateId});
 
   @override
   Map<String, dynamic> toMetadataMap() => {
-        ...super.toMetadataMap(),
-        'trackingNumber': trackingNumber,
-      };
+    ...super.toMetadataMap(),
+    'trackingNumber': trackingNumber,
+  };
 }
 
 // ============================================================================
@@ -93,24 +93,24 @@ class OrderShipped extends DomainEvent {
 // ============================================================================
 
 class EventStore {
-  final List<DomainEvent> _events = [];
+  final List<RaiserEvent> _events = [];
   final EventBus _bus;
 
   EventStore(this._bus);
 
   /// Append and publish an event
-  Future<void> append(DomainEvent event) async {
+  Future<void> append(RaiserEvent event) async {
     _events.add(event);
     await _bus.publish(event);
   }
 
   /// Get all events for an aggregate
-  List<DomainEvent> getEventsForAggregate(String aggregateId) {
+  List<RaiserEvent> getEventsForAggregate(String aggregateId) {
     return _events.where((e) => e.aggregateId == aggregateId).toList();
   }
 
   /// Get all events of a specific type
-  List<T> getEventsByType<T extends DomainEvent>() {
+  List<T> getEventsByType<T extends RaiserEvent>() {
     return _events.whereType<T>().toList();
   }
 
@@ -121,7 +121,7 @@ class EventStore {
     }
   }
 
-  Future<void> _publishTyped(EventBus bus, DomainEvent event) async {
+  Future<void> _publishTyped(EventBus bus, RaiserEvent event) async {
     switch (event) {
       case CartItemAdded e:
         await bus.publish(e);
@@ -136,7 +136,6 @@ class EventStore {
     }
   }
 }
-
 
 // ============================================================================
 // READ MODEL / PROJECTION
@@ -274,7 +273,6 @@ class OrderState {
   }
 }
 
-
 // ============================================================================
 // MULTI-BUS ARCHITECTURE
 // ============================================================================
@@ -291,9 +289,9 @@ class MultiBusArchitecture {
   final EventBus notificationBus;
 
   MultiBusArchitecture()
-      : domainBus = EventBus(errorStrategy: ErrorStrategy.stop),
-        integrationBus = EventBus(errorStrategy: ErrorStrategy.continueOnError),
-        notificationBus = EventBus(errorStrategy: ErrorStrategy.swallow);
+    : domainBus = EventBus(errorStrategy: ErrorStrategy.stop),
+      integrationBus = EventBus(errorStrategy: ErrorStrategy.continueOnError),
+      notificationBus = EventBus(errorStrategy: ErrorStrategy.swallow);
 
   /// Bridge domain events to other buses
   void setupBridges() {
@@ -336,24 +334,25 @@ Future<void> eventSourcingExample() async {
   const cartId = 'cart-001';
 
   // Record events
-  await store.append(CartItemAdded(
-    productId: 'SKU-A',
-    quantity: 2,
-    price: 29.99,
-    aggregateId: cartId,
-  ));
+  await store.append(
+    CartItemAdded(
+      productId: 'SKU-A',
+      quantity: 2,
+      price: 29.99,
+      aggregateId: cartId,
+    ),
+  );
 
-  await store.append(CartItemAdded(
-    productId: 'SKU-B',
-    quantity: 1,
-    price: 49.99,
-    aggregateId: cartId,
-  ));
+  await store.append(
+    CartItemAdded(
+      productId: 'SKU-B',
+      quantity: 1,
+      price: 49.99,
+      aggregateId: cartId,
+    ),
+  );
 
-  await store.append(CartItemRemoved(
-    productId: 'SKU-A',
-    aggregateId: cartId,
-  ));
+  await store.append(CartItemRemoved(productId: 'SKU-A', aggregateId: cartId));
 
   // Query event history
   final cartEvents = store.getEventsForAggregate(cartId);
@@ -373,21 +372,19 @@ Future<void> sagaExample() async {
   const orderId = 'order-500';
 
   // Simulate order flow
-  await bus.publish(CheckoutStarted(
-    totalAmount: 199.99,
-    aggregateId: orderId,
-  ));
+  await bus.publish(CheckoutStarted(totalAmount: 199.99, aggregateId: orderId));
 
-  await bus.publish(PaymentReceived(
-    transactionId: 'txn-12345',
-    amount: 199.99,
-    aggregateId: orderId,
-  ));
+  await bus.publish(
+    PaymentReceived(
+      transactionId: 'txn-12345',
+      amount: 199.99,
+      aggregateId: orderId,
+    ),
+  );
 
-  await bus.publish(OrderShipped(
-    trackingNumber: 'TRACK-ABC123',
-    aggregateId: orderId,
-  ));
+  await bus.publish(
+    OrderShipped(trackingNumber: 'TRACK-ABC123', aggregateId: orderId),
+  );
 
   // Check final state
   final state = saga.getOrderState(orderId);
@@ -411,21 +408,27 @@ Future<void> projectionReplayExample() async {
   const cartId = 'cart-replay';
 
   // Add items
-  await store.append(CartItemAdded(
-    productId: 'ITEM-1',
-    quantity: 3,
-    price: 10.00,
-    aggregateId: cartId,
-  ));
+  await store.append(
+    CartItemAdded(
+      productId: 'ITEM-1',
+      quantity: 3,
+      price: 10.00,
+      aggregateId: cartId,
+    ),
+  );
 
-  await store.append(CartItemAdded(
-    productId: 'ITEM-2',
-    quantity: 2,
-    price: 25.00,
-    aggregateId: cartId,
-  ));
+  await store.append(
+    CartItemAdded(
+      productId: 'ITEM-2',
+      quantity: 2,
+      price: 25.00,
+      aggregateId: cartId,
+    ),
+  );
 
-  print('  Original projection total: \$${originalProjection.getTotal(cartId)}');
+  print(
+    '  Original projection total: \$${originalProjection.getTotal(cartId)}',
+  );
 
   // Create new projection and replay events
   final replayBus = EventBus();
@@ -460,9 +463,11 @@ Future<void> multiBusExample() async {
   arch.setupBridges();
 
   // Publish to domain bus - bridges forward to others
-  await arch.domainBus.publish(PaymentReceived(
-    transactionId: 'multi-bus-txn',
-    amount: 500.00,
-    aggregateId: 'order-multi',
-  ));
+  await arch.domainBus.publish(
+    PaymentReceived(
+      transactionId: 'multi-bus-txn',
+      amount: 500.00,
+      aggregateId: 'order-multi',
+    ),
+  );
 }

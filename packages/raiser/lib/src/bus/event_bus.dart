@@ -20,7 +20,8 @@ typedef ErrorCallback = void Function(Object error, StackTrace stackTrace);
 ///
 /// Middleware receives the event and a `next` function to call the next
 /// middleware or handler in the pipeline.
-typedef Middleware = Future<void> Function(dynamic event, Future<void> Function() next);
+typedef Middleware =
+    Future<void> Function(dynamic event, Future<void> Function() next);
 
 /// Internal class for storing handler registrations with metadata.
 class _HandlerEntry<T> {
@@ -118,7 +119,11 @@ class EventBus {
       };
     }
 
-    final entry = _MiddlewareEntry(middlewareFunc, priority, _middlewareCounter++);
+    final entry = _MiddlewareEntry(
+      middlewareFunc,
+      priority,
+      _middlewareCounter++,
+    );
     _middleware.add(entry);
 
     return Subscription(() {
@@ -142,7 +147,10 @@ class EventBus {
   /// Higher priority handlers execute first.
   ///
   /// Returns a [Subscription] that can be used to cancel the registration.
-  Subscription on<T>(Future<void> Function(T event) handler, {int priority = 0}) {
+  Subscription on<T>(
+    Future<void> Function(T event) handler, {
+    int priority = 0,
+  }) {
     return _addHandler<T>(handler, priority);
   }
 
