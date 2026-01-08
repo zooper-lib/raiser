@@ -48,7 +48,7 @@ class RaiserCollectingBuilder implements Builder {
     // Collect all handlers
     for (final annotatedElement in libraryReader.annotatedWith(_handlerChecker)) {
       try {
-        final info = _handlerGenerator.extractHandlerInfo(annotatedElement.element.firstFragment.element, annotatedElement.annotation, buildStep);
+        final info = _handlerGenerator.extractHandlerInfo(annotatedElement.element, annotatedElement.annotation, buildStep);
         handlers.add(info.toJson());
       } on InvalidGenerationSourceError {
         // Skip invalid elements, errors will be reported by validation
@@ -58,7 +58,7 @@ class RaiserCollectingBuilder implements Builder {
     // Collect all middleware
     for (final annotatedElement in libraryReader.annotatedWith(_middlewareChecker)) {
       try {
-        final info = _middlewareGenerator.extractMiddlewareInfo(annotatedElement.element.firstFragment.element, annotatedElement.annotation, buildStep);
+        final info = _middlewareGenerator.extractMiddlewareInfo(annotatedElement.element, annotatedElement.annotation, buildStep);
         middleware.add(info.toJson());
       } on InvalidGenerationSourceError {
         // Skip invalid elements, errors will be reported by validation
@@ -70,8 +70,8 @@ class RaiserCollectingBuilder implements Builder {
       // Collect imports from the source file - only event type imports are needed
       // We need imports that define the event types used in handlers
       final sourceImports = <String>[];
-      for (final import in library.firstFragment.libraryImports2) {
-        final importedLib = import.importedLibrary2;
+      for (final import in library.firstFragment.libraryImports) {
+        final importedLib = import.importedLibrary;
         if (importedLib == null) continue;
         final source = importedLib.uri.toString();
         // Only include imports that likely contain event definitions

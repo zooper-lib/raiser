@@ -1,4 +1,4 @@
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:raiser_annotation/raiser_annotation.dart';
 import 'package:source_gen/source_gen.dart';
@@ -11,8 +11,8 @@ import 'models/parameter_info.dart';
 /// and generates registration code.
 class RaiserMiddlewareGenerator extends GeneratorForAnnotation<RaiserMiddleware> {
   @override
-  String generateForAnnotatedElement(Element2 element, ConstantReader annotation, BuildStep buildStep) {
-    final middlewareInfo = extractMiddlewareInfo(element.firstFragment.element, annotation, buildStep);
+  String generateForAnnotatedElement(Element element, ConstantReader annotation, BuildStep buildStep) {
+    final middlewareInfo = extractMiddlewareInfo(element, annotation, buildStep);
     // Generate registration code
     return _generateRegistrationCode(middlewareInfo);
   }
@@ -21,7 +21,7 @@ class RaiserMiddlewareGenerator extends GeneratorForAnnotation<RaiserMiddleware>
   ///
   /// This method is used by both the individual generator and the
   /// aggregating builder to extract middleware metadata.
-  MiddlewareInfo extractMiddlewareInfo(Element2 element, ConstantReader annotation, BuildStep buildStep) {
+  MiddlewareInfo extractMiddlewareInfo(Element element, ConstantReader annotation, BuildStep buildStep) {
     // Validate the annotated element
     final classElement = _validateElement(element);
 
@@ -34,7 +34,7 @@ class RaiserMiddlewareGenerator extends GeneratorForAnnotation<RaiserMiddleware>
 
     // Build MiddlewareInfo
     return MiddlewareInfo(
-      className: classElement.name3 ?? '',
+      className: classElement.name ?? '',
       priority: priority,
       busName: busName,
       sourceFile: buildStep.inputId.path,
@@ -43,9 +43,9 @@ class RaiserMiddlewareGenerator extends GeneratorForAnnotation<RaiserMiddleware>
   }
 
   /// Validates that the annotated element is a valid middleware class.
-  ClassElement2 _validateElement(Element2 element) {
+  ClassElement _validateElement(Element element) {
     // Check if element is a class
-    if (element is! ClassElement2) {
+    if (element is! ClassElement) {
       throw InvalidGenerationSourceError('@RaiserMiddleware can only be applied to classes. Found: ${element.kind.displayName}');
     }
 
@@ -55,22 +55,22 @@ class RaiserMiddlewareGenerator extends GeneratorForAnnotation<RaiserMiddleware>
     if (classElement.isAbstract) {
       throw InvalidGenerationSourceError(
         "@RaiserMiddleware cannot be applied to abstract classes. "
-        "'${classElement.name3}' must be concrete.",
+        "'${classElement.name ?? ''}' must be concrete.",
       );
     }
 
     // Check for accessible constructor
     if (!_hasAccessibleConstructor(classElement)) {
-      throw InvalidGenerationSourceError("Class '${classElement.name3}' must have an accessible constructor for registration.");
+      throw InvalidGenerationSourceError("Class '${classElement.name ?? ''}' must have an accessible constructor for registration.");
     }
 
     return classElement;
   }
 
   /// Checks if the class has an accessible (public) constructor.
-  bool _hasAccessibleConstructor(ClassElement2 classElement) {
+  bool _hasAccessibleConstructor(ClassElement classElement) {
     // Look for any public constructor
-    for (final constructor in classElement.constructors2) {
+    for (final constructor in classElement.constructors) {
       if (!constructor.isPrivate && !constructor.isFactory) {
         return true;
       }
@@ -79,14 +79,14 @@ class RaiserMiddlewareGenerator extends GeneratorForAnnotation<RaiserMiddleware>
   }
 
   /// Analyzes the constructor for dependency injection support.
-  ConstructorInfo _analyzeConstructor(ClassElement2 classElement) {
+  ConstructorInfo _analyzeConstructor(ClassElement classElement) {
     // Find the primary constructor (unnamed or first public)
-    ConstructorElement2? primaryConstructor;
+    ConstructorElement? primaryConstructor;
 
-    for (final constructor in classElement.constructors2) {
+    for (final constructor in classElement.constructors) {
       if (!constructor.isPrivate && !constructor.isFactory) {
         // Prefer unnamed constructor
-        if ((constructor.name3 ?? '').isEmpty) {
+        if ((constructor.name ?? '').isEmpty) {
           primaryConstructor = constructor;
           break;
         }
@@ -107,10 +107,11 @@ class RaiserMiddlewareGenerator extends GeneratorForAnnotation<RaiserMiddleware>
 
     // Extract parameter information
     final parameterInfos = parameters.map((param) {
+      final bool isRequired = param.isRequiredNamed || param.isRequiredPositional;
       return ParameterInfo(
-        name: param.name3 ?? '',
+        name: param.name ?? '',
         type: param.type.getDisplayString(),
-        isRequired: param.isRequired,
+        isRequired: isRequired,
         defaultValue: param.defaultValueCode,
         isNamed: param.isNamed,
       );
