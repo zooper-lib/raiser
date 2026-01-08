@@ -14,7 +14,7 @@ library;
 ///
 /// Example:
 /// ```dart
-/// class UserCreated extends DomainEvent {
+/// class UserCreated extends RaiserEvent {
 ///   final String userId;
 ///   final String email;
 ///
@@ -28,7 +28,7 @@ library;
 ///   };
 /// }
 /// ```
-abstract class DomainEvent {
+abstract class RaiserEvent {
   /// Unique identifier for this event instance.
   final String id;
 
@@ -46,12 +46,9 @@ abstract class DomainEvent {
   /// If [id] is not provided, a unique ID is automatically generated.
   /// If [timestamp] is not provided, the current time is used.
   /// [aggregateId] is optional and links the event to a domain aggregate.
-  DomainEvent({
-    String? id,
-    DateTime? timestamp,
-    this.aggregateId,
-  })  : id = id ?? _generateId(),
-        timestamp = timestamp ?? DateTime.now();
+  RaiserEvent({String? id, DateTime? timestamp, this.aggregateId})
+    : id = id ?? _generateId(),
+      timestamp = timestamp ?? DateTime.now();
 
   /// Generates a unique ID for an event.
   ///
@@ -75,8 +72,8 @@ abstract class DomainEvent {
   /// };
   /// ```
   Map<String, dynamic> toMetadataMap() => {
-        'id': id,
-        'timestamp': timestamp.toIso8601String(),
-        'aggregateId': aggregateId,
-      };
+    'id': id,
+    'timestamp': timestamp.toIso8601String(),
+    'aggregateId': aggregateId,
+  };
 }

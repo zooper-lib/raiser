@@ -6,7 +6,7 @@
 import 'package:raiser/raiser.dart';
 
 /// Event fired when a user is created.
-class UserCreatedEvent extends DomainEvent {
+class UserCreatedEvent extends RaiserEvent {
   final String userId;
   final String email;
 
@@ -18,14 +18,14 @@ class UserCreatedEvent extends DomainEvent {
 
   @override
   Map<String, dynamic> toMetadataMap() => {
-        ...super.toMetadataMap(),
-        'userId': userId,
-        'email': email,
-      };
+    ...super.toMetadataMap(),
+    'userId': userId,
+    'email': email,
+  };
 }
 
 /// Event fired when an order is placed.
-class OrderPlacedEvent extends DomainEvent {
+class OrderPlacedEvent extends RaiserEvent {
   final String orderId;
   final double amount;
 
@@ -37,14 +37,14 @@ class OrderPlacedEvent extends DomainEvent {
 
   @override
   Map<String, dynamic> toMetadataMap() => {
-        ...super.toMetadataMap(),
-        'orderId': orderId,
-        'amount': amount,
-      };
+    ...super.toMetadataMap(),
+    'orderId': orderId,
+    'amount': amount,
+  };
 }
 
 /// Event fired when a payment is processed.
-class PaymentProcessedEvent extends DomainEvent {
+class PaymentProcessedEvent extends RaiserEvent {
   final String paymentId;
   final bool success;
 
@@ -56,14 +56,14 @@ class PaymentProcessedEvent extends DomainEvent {
 
   @override
   Map<String, dynamic> toMetadataMap() => {
-        ...super.toMetadataMap(),
-        'paymentId': paymentId,
-        'success': success,
-      };
+    ...super.toMetadataMap(),
+    'paymentId': paymentId,
+    'success': success,
+  };
 }
 
 /// Event fired when inventory is updated.
-class InventoryUpdatedEvent extends DomainEvent {
+class InventoryUpdatedEvent extends RaiserEvent {
   final String productId;
   final int quantity;
 
@@ -75,8 +75,8 @@ class InventoryUpdatedEvent extends DomainEvent {
 
   @override
   Map<String, dynamic> toMetadataMap() => {
-        ...super.toMetadataMap(),
-        'productId': productId,
-        'quantity': quantity,
-      };
+    ...super.toMetadataMap(),
+    'productId': productId,
+    'quantity': quantity,
+  };
 }

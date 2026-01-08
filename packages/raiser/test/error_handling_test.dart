@@ -30,11 +30,13 @@ void main() {
 
         await expectLater(
           bus.publish(TestEvent('test')),
-          throwsA(isA<Exception>().having(
-            (e) => e.toString(),
-            'message',
-            contains('Handler 2 failed'),
-          )),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'message',
+              contains('Handler 2 failed'),
+            ),
+          ),
         );
 
         // Handler 1 executed, handler 2 threw, handler 3 should NOT execute
@@ -78,9 +80,13 @@ void main() {
 
           // Should have executed handlers before failing one, plus the failing one
           final expectedOrder = List.generate(countBefore, (i) => i)..add(-1);
-          expect(executionOrder, equals(expectedOrder),
-              reason: 'With $countBefore handlers before failure, '
-                  'subsequent handlers should not execute');
+          expect(
+            executionOrder,
+            equals(expectedOrder),
+            reason:
+                'With $countBefore handlers before failure, '
+                'subsequent handlers should not execute',
+          );
         }
       });
 
@@ -108,40 +114,45 @@ void main() {
 
     // **Feature: core-event-system, Property 11: Error Strategy ContinueOnError Collects All Errors**
     group('Property 11: Error Strategy ContinueOnError Collects All Errors', () {
-      test('continueOnError invokes all handlers and collects errors', () async {
-        final bus = EventBus(errorStrategy: ErrorStrategy.continueOnError);
-        final executionOrder = <int>[];
+      test(
+        'continueOnError invokes all handlers and collects errors',
+        () async {
+          final bus = EventBus(errorStrategy: ErrorStrategy.continueOnError);
+          final executionOrder = <int>[];
 
-        bus.on<TestEvent>((event) async {
-          executionOrder.add(1);
-          throw Exception('Handler 1 failed');
-        }, priority: 30);
+          bus.on<TestEvent>((event) async {
+            executionOrder.add(1);
+            throw Exception('Handler 1 failed');
+          }, priority: 30);
 
-        bus.on<TestEvent>((event) async {
-          executionOrder.add(2);
-        }, priority: 20);
+          bus.on<TestEvent>((event) async {
+            executionOrder.add(2);
+          }, priority: 20);
 
-        bus.on<TestEvent>((event) async {
-          executionOrder.add(3);
-          throw Exception('Handler 3 failed');
-        }, priority: 10);
+          bus.on<TestEvent>((event) async {
+            executionOrder.add(3);
+            throw Exception('Handler 3 failed');
+          }, priority: 10);
 
-        bus.on<TestEvent>((event) async {
-          executionOrder.add(4);
-        }, priority: 5);
+          bus.on<TestEvent>((event) async {
+            executionOrder.add(4);
+          }, priority: 5);
 
-        await expectLater(
-          bus.publish(TestEvent('test')),
-          throwsA(isA<AggregateException>().having(
-            (e) => e.errors.length,
-            'error count',
-            equals(2),
-          )),
-        );
+          await expectLater(
+            bus.publish(TestEvent('test')),
+            throwsA(
+              isA<AggregateException>().having(
+                (e) => e.errors.length,
+                'error count',
+                equals(2),
+              ),
+            ),
+          );
 
-        // All handlers should have executed
-        expect(executionOrder, equals([1, 2, 3, 4]));
-      });
+          // All handlers should have executed
+          expect(executionOrder, equals([1, 2, 3, 4]));
+        },
+      );
 
       test('continueOnError with varying failure counts', () async {
         // Test with different numbers of failing handlers
@@ -165,16 +176,22 @@ void main() {
 
           await expectLater(
             bus.publish(TestEvent('test')),
-            throwsA(isA<AggregateException>().having(
-              (e) => e.errors.length,
-              'error count',
-              equals(failCount),
-            )),
+            throwsA(
+              isA<AggregateException>().having(
+                (e) => e.errors.length,
+                'error count',
+                equals(failCount),
+              ),
+            ),
           );
 
           // All handlers should have executed regardless of failures
-          expect(executionOrder, equals(List.generate(totalHandlers, (i) => i)),
-              reason: 'All $totalHandlers handlers should execute with $failCount failures');
+          expect(
+            executionOrder,
+            equals(List.generate(totalHandlers, (i) => i)),
+            reason:
+                'All $totalHandlers handlers should execute with $failCount failures',
+          );
         }
       });
 
@@ -274,8 +291,12 @@ void main() {
           await expectLater(bus.publish(TestEvent('test')), completes);
 
           // All handlers should have executed regardless of failures
-          expect(executionOrder, equals(List.generate(totalHandlers, (i) => i)),
-              reason: 'All $totalHandlers handlers should execute with $failCount failures');
+          expect(
+            executionOrder,
+            equals(List.generate(totalHandlers, (i) => i)),
+            reason:
+                'All $totalHandlers handlers should execute with $failCount failures',
+          );
         }
       });
 
@@ -308,104 +329,113 @@ void main() {
 
     // **Feature: core-event-system, Property 13: Error Callback Invocation**
     group('Property 13: Error Callback Invocation', () {
-      test('error callback is invoked for each handler error with stop strategy', () async {
-        final callbackErrors = <Object>[];
-        final callbackStackTraces = <StackTrace>[];
+      test(
+        'error callback is invoked for each handler error with stop strategy',
+        () async {
+          final callbackErrors = <Object>[];
+          final callbackStackTraces = <StackTrace>[];
 
-        final bus = EventBus(
-          errorStrategy: ErrorStrategy.stop,
-          onError: (error, stackTrace) {
-            callbackErrors.add(error);
-            callbackStackTraces.add(stackTrace);
-          },
-        );
+          final bus = EventBus(
+            errorStrategy: ErrorStrategy.stop,
+            onError: (error, stackTrace) {
+              callbackErrors.add(error);
+              callbackStackTraces.add(stackTrace);
+            },
+          );
 
-        bus.on<TestEvent>((event) async {
-          throw ArgumentError('Handler failed');
-        });
+          bus.on<TestEvent>((event) async {
+            throw ArgumentError('Handler failed');
+          });
 
-        await expectLater(
-          bus.publish(TestEvent('test')),
-          throwsA(isA<ArgumentError>()),
-        );
+          await expectLater(
+            bus.publish(TestEvent('test')),
+            throwsA(isA<ArgumentError>()),
+          );
 
-        // Callback should have been invoked once
-        expect(callbackErrors.length, equals(1));
-        expect(callbackErrors[0], isA<ArgumentError>());
-        expect(callbackStackTraces.length, equals(1));
-        expect(callbackStackTraces[0], isNotNull);
-      });
+          // Callback should have been invoked once
+          expect(callbackErrors.length, equals(1));
+          expect(callbackErrors[0], isA<ArgumentError>());
+          expect(callbackStackTraces.length, equals(1));
+          expect(callbackStackTraces[0], isNotNull);
+        },
+      );
 
-      test('error callback is invoked for each handler error with continueOnError strategy', () async {
-        final callbackErrors = <Object>[];
-        final callbackStackTraces = <StackTrace>[];
+      test(
+        'error callback is invoked for each handler error with continueOnError strategy',
+        () async {
+          final callbackErrors = <Object>[];
+          final callbackStackTraces = <StackTrace>[];
 
-        final bus = EventBus(
-          errorStrategy: ErrorStrategy.continueOnError,
-          onError: (error, stackTrace) {
-            callbackErrors.add(error);
-            callbackStackTraces.add(stackTrace);
-          },
-        );
+          final bus = EventBus(
+            errorStrategy: ErrorStrategy.continueOnError,
+            onError: (error, stackTrace) {
+              callbackErrors.add(error);
+              callbackStackTraces.add(stackTrace);
+            },
+          );
 
-        bus.on<TestEvent>((event) async {
-          throw ArgumentError('Error 1');
-        }, priority: 30);
+          bus.on<TestEvent>((event) async {
+            throw ArgumentError('Error 1');
+          }, priority: 30);
 
-        bus.on<TestEvent>((event) async {
-          // No error
-        }, priority: 20);
+          bus.on<TestEvent>((event) async {
+            // No error
+          }, priority: 20);
 
-        bus.on<TestEvent>((event) async {
-          throw StateError('Error 2');
-        }, priority: 10);
+          bus.on<TestEvent>((event) async {
+            throw StateError('Error 2');
+          }, priority: 10);
 
-        await expectLater(
-          bus.publish(TestEvent('test')),
-          throwsA(isA<AggregateException>()),
-        );
+          await expectLater(
+            bus.publish(TestEvent('test')),
+            throwsA(isA<AggregateException>()),
+          );
 
-        // Callback should have been invoked for each error
-        expect(callbackErrors.length, equals(2));
-        expect(callbackErrors[0], isA<ArgumentError>());
-        expect(callbackErrors[1], isA<StateError>());
-        expect(callbackStackTraces.length, equals(2));
-      });
+          // Callback should have been invoked for each error
+          expect(callbackErrors.length, equals(2));
+          expect(callbackErrors[0], isA<ArgumentError>());
+          expect(callbackErrors[1], isA<StateError>());
+          expect(callbackStackTraces.length, equals(2));
+        },
+      );
 
-      test('error callback is invoked for each handler error with swallow strategy', () async {
-        final callbackErrors = <Object>[];
-        final callbackStackTraces = <StackTrace>[];
+      test(
+        'error callback is invoked for each handler error with swallow strategy',
+        () async {
+          final callbackErrors = <Object>[];
+          final callbackStackTraces = <StackTrace>[];
 
-        final bus = EventBus(
-          errorStrategy: ErrorStrategy.swallow,
-          onError: (error, stackTrace) {
-            callbackErrors.add(error);
-            callbackStackTraces.add(stackTrace);
-          },
-        );
+          final bus = EventBus(
+            errorStrategy: ErrorStrategy.swallow,
+            onError: (error, stackTrace) {
+              callbackErrors.add(error);
+              callbackStackTraces.add(stackTrace);
+            },
+          );
 
-        bus.on<TestEvent>((event) async {
-          throw ArgumentError('Error 1');
-        }, priority: 30);
+          bus.on<TestEvent>((event) async {
+            throw ArgumentError('Error 1');
+          }, priority: 30);
 
-        bus.on<TestEvent>((event) async {
-          throw StateError('Error 2');
-        }, priority: 20);
+          bus.on<TestEvent>((event) async {
+            throw StateError('Error 2');
+          }, priority: 20);
 
-        bus.on<TestEvent>((event) async {
-          throw FormatException('Error 3');
-        }, priority: 10);
+          bus.on<TestEvent>((event) async {
+            throw FormatException('Error 3');
+          }, priority: 10);
 
-        // Should complete without throwing
-        await expectLater(bus.publish(TestEvent('test')), completes);
+          // Should complete without throwing
+          await expectLater(bus.publish(TestEvent('test')), completes);
 
-        // Callback should have been invoked for each error
-        expect(callbackErrors.length, equals(3));
-        expect(callbackErrors[0], isA<ArgumentError>());
-        expect(callbackErrors[1], isA<StateError>());
-        expect(callbackErrors[2], isA<FormatException>());
-        expect(callbackStackTraces.length, equals(3));
-      });
+          // Callback should have been invoked for each error
+          expect(callbackErrors.length, equals(3));
+          expect(callbackErrors[0], isA<ArgumentError>());
+          expect(callbackErrors[1], isA<StateError>());
+          expect(callbackErrors[2], isA<FormatException>());
+          expect(callbackStackTraces.length, equals(3));
+        },
+      );
 
       test('error callback receives correct stack traces', () async {
         StackTrace? capturedStackTrace;
@@ -424,7 +454,10 @@ void main() {
         await bus.publish(TestEvent('test'));
 
         expect(capturedStackTrace, isNotNull);
-        expect(capturedStackTrace.toString(), contains('error_handling_test.dart'));
+        expect(
+          capturedStackTrace.toString(),
+          contains('error_handling_test.dart'),
+        );
       });
 
       test('no callback invocation when no errors occur', () async {
@@ -468,8 +501,11 @@ void main() {
 
           await bus.publish(TestEvent('test'));
 
-          expect(callbackErrors.length, equals(errorCount),
-              reason: 'Callback should be invoked $errorCount times');
+          expect(
+            callbackErrors.length,
+            equals(errorCount),
+            reason: 'Callback should be invoked $errorCount times',
+          );
         }
       });
     });

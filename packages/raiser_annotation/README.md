@@ -72,7 +72,7 @@ class LoggingMiddleware {
 
   LoggingMiddleware(this._logger);
 
-  Future<void> call(DomainEvent event, Future<void> Function() next) async {
+  Future<void> call(RaiserEvent event, Future<void> Function() next) async {
     _logger.info('Processing ${event.runtimeType}');
     await next();
     _logger.info('Completed ${event.runtimeType}');

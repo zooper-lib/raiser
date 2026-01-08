@@ -72,7 +72,7 @@ class LoggingMiddleware {
 
   LoggingMiddleware(this._logger);
 
-  Future<void> call(DomainEvent event, Future<void> Function() next) async {
+  Future<void> call(RaiserEvent event, Future<void> Function() next) async {
     _logger.info('Event: ${event.runtimeType}');
     await next();
   }
@@ -195,8 +195,8 @@ This approach ensures all handlers across your entire codebase are discovered, e
 ## Requirements
 
 - Dart SDK >= 3.7.0
-- Handlers must implement `EventHandler<T>` where `T` extends `DomainEvent`
-- Middleware must have a `call` method with signature `Future<void> Function(DomainEvent, Future<void> Function())`
+- Handlers must implement `EventHandler<T>` where `T` extends `RaiserEvent`
+- Middleware must have a `call` method with signature `Future<void> Function(RaiserEvent, Future<void> Function())`
 
 ## Related Packages
 

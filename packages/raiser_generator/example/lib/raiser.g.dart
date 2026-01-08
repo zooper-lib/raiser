@@ -44,7 +44,8 @@ void initRaiser(EventBus bus) {
 
 typedef LoggingUserHandlerFactory = LoggingUserHandler Function();
 typedef OrderProcessingHandlerFactory = OrderProcessingHandler Function();
-typedef StructuredLoggingMiddlewareFactory = StructuredLoggingMiddleware Function();
+typedef StructuredLoggingMiddlewareFactory =
+    StructuredLoggingMiddleware Function();
 typedef AuthorizationMiddlewareFactory = AuthorizationMiddleware Function();
 
 /// Initializes Raiser with factory functions for dependency injection.
@@ -118,7 +119,8 @@ void initRaiserPaymentsBus(EventBus bus) {
   bus.register<PaymentProcessedEvent>(PaymentAuditHandler(), priority: 50);
 }
 
-typedef ConfigurablePaymentHandlerFactory = ConfigurablePaymentHandler Function();
+typedef ConfigurablePaymentHandlerFactory =
+    ConfigurablePaymentHandler Function();
 typedef RateLimitingMiddlewareFactory = RateLimitingMiddleware Function();
 
 /// Initializes Raiser with factory functions for dependency injection.
@@ -163,4 +165,3 @@ void initRaiserInventoryBus(EventBus bus) {
   // Priority: 0
   bus.register<InventoryUpdatedEvent>(InventoryHandler());
 }
-

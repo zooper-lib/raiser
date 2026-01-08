@@ -30,7 +30,7 @@ dependencies:
 import 'package:raiser/raiser.dart';
 
 // Define an event
-class UserCreated extends DomainEvent {
+class UserCreated extends RaiserEvent {
   final String userId;
   final String email;
 
@@ -59,7 +59,7 @@ void main() async {
 
 ## Domain Events
 
-All events extend `DomainEvent`, which provides automatic metadata:
+All events extend `RaiserEvent`, which provides automatic metadata:
 
 | Property | Description |
 |----------|-------------|
@@ -68,7 +68,7 @@ All events extend `DomainEvent`, which provides automatic metadata:
 | `aggregateId` | Optional link to a domain aggregate |
 
 ```dart
-class OrderPlaced extends DomainEvent {
+class OrderPlaced extends RaiserEvent {
   final String orderId;
   final double amount;
 
