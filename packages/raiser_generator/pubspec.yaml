@@ -1,6 +1,6 @@
 name: raiser_generator
 description: Code generator for the Raiser domain event library. Auto-discovers and registers handlers.
-version: 2.0.0
+version: 2.0.1
 repository: https://github.com/zooper/raiser
 issue_tracker: https://github.com/zooper/raiser/issues
 
@@ -16,7 +16,7 @@ topics:
 
 dependencies:
   analyzer: '>=7.0.0 <9.0.0'
-  build: ^3.0.0
+  build: ^4.0.0
   glob: ^2.1.0
   raiser: ^2.0.0
   raiser_annotation: ^2.0.0
