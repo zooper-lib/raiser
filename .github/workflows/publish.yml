@@ -3,8 +3,8 @@ name: Publish
 on:
   workflow_dispatch:
   push:
-    tags:
-      - "v*.*.*"
+    branches:
+      - "release/**"
 
 concurrency:
   group: publish-${{ github.ref }}
