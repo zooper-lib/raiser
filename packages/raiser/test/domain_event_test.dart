@@ -1,22 +1,17 @@
 import 'package:raiser/raiser.dart';
 import 'package:test/test.dart';
 
-/// Simple concrete DomainEvent for testing purposes.
-class TestEvent extends DomainEvent {
+/// Simple concrete RaiserEvent for testing purposes.
+class TestEvent extends RaiserEvent {
   final String name;
 
-  TestEvent({
-    required this.name,
-    super.id,
-    super.timestamp,
-    super.aggregateId,
-  });
+  TestEvent({required this.name, super.id, super.timestamp, super.aggregateId});
 
   @override
   Map<String, dynamic> toMetadataMap() => {
-        ...super.toMetadataMap(),
-        'name': name,
-      };
+    ...super.toMetadataMap(),
+    'name': name,
+  };
 
   /// Reconstructs a TestEvent from a metadata map.
   static TestEvent fromMetadataMap(Map<String, dynamic> map) {
@@ -30,7 +25,7 @@ class TestEvent extends DomainEvent {
 }
 
 void main() {
-  group('DomainEvent', () {
+  group('RaiserEvent', () {
     // **Feature: core-event-system, Property 1: Event ID Uniqueness**
     test('Property 1: all event IDs are unique across multiple instances', () {
       final events = List.generate(100, (_) => TestEvent(name: 'test'));
@@ -53,30 +48,36 @@ void main() {
     });
 
     // **Feature: core-event-system, Property 2: Event Metadata Round-Trip**
-    test('Property 2: serializing and deserializing preserves event metadata', () {
-      final testCases = [
-        TestEvent(name: 'simple'),
-        TestEvent(name: 'with-aggregate', aggregateId: 'agg-123'),
-        TestEvent(name: 'special chars !@#'),
-      ];
+    test(
+      'Property 2: serializing and deserializing preserves event metadata',
+      () {
+        final testCases = [
+          TestEvent(name: 'simple'),
+          TestEvent(name: 'with-aggregate', aggregateId: 'agg-123'),
+          TestEvent(name: 'special chars !@#'),
+        ];
 
-      for (final original in testCases) {
-        final map = original.toMetadataMap();
-        final reconstructed = TestEvent.fromMetadataMap(map);
+        for (final original in testCases) {
+          final map = original.toMetadataMap();
+          final reconstructed = TestEvent.fromMetadataMap(map);
 
-        expect(reconstructed.id, equals(original.id));
-        expect(reconstructed.timestamp, equals(original.timestamp));
-        expect(reconstructed.aggregateId, equals(original.aggregateId));
-        expect(reconstructed.name, equals(original.name));
-      }
-    });
+          expect(reconstructed.id, equals(original.id));
+          expect(reconstructed.timestamp, equals(original.timestamp));
+          expect(reconstructed.aggregateId, equals(original.aggregateId));
+          expect(reconstructed.name, equals(original.name));
+        }
+      },
+    );
 
     test('timestamp is automatically set', () {
       final before = DateTime.now();
       final event = TestEvent(name: 'test');
       final after = DateTime.now();
 
-      expect(event.timestamp.isAfter(before.subtract(Duration(seconds: 1))), isTrue);
+      expect(
+        event.timestamp.isAfter(before.subtract(Duration(seconds: 1))),
+        isTrue,
+      );
       expect(event.timestamp.isBefore(after.add(Duration(seconds: 1))), isTrue);
     });
   });

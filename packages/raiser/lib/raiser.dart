@@ -5,7 +5,7 @@
 ///
 /// ## Core Components
 ///
-/// - [DomainEvent]: Base class for domain events with metadata
+/// - [RaiserEvent]: Base class for domain events with metadata
 /// - [EventHandler]: Interface for type-safe event handlers
 /// - [EventBus]: Central dispatcher for publishing and routing events
 /// - [Subscription]: Handle for cancelling handler registrations
@@ -20,7 +20,7 @@
 /// ```dart
 /// import 'package:raiser/raiser.dart';
 ///
-/// class UserCreated extends DomainEvent {
+/// class UserCreated extends RaiserEvent {
 ///   final String userId;
 ///   UserCreated(this.userId);
 ///
@@ -44,7 +44,7 @@
 library;
 
 // Core event types
-export 'src/events/domain_event.dart';
+export 'src/events/raiser_event.dart';
 
 // Handler interfaces
 export 'src/handlers/event_handler.dart';

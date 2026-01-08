@@ -146,10 +146,7 @@ class RateLimitingMiddleware {
   final RateLimiter rateLimiter;
   final int maxRequests;
 
-  RateLimitingMiddleware(
-    this.rateLimiter, {
-    this.maxRequests = 100,
-  });
+  RateLimitingMiddleware(this.rateLimiter, {this.maxRequests = 100});
 
   Future<void> call(dynamic event, Future<void> Function() next) async {
     if (await rateLimiter.allowRequest(maxRequests)) {

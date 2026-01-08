@@ -83,7 +83,9 @@ class LowPriorityOrderHandler extends EventHandler<OrderPlacedEvent> {
 class PaymentHandler extends EventHandler<PaymentProcessedEvent> {
   @override
   Future<void> handle(PaymentProcessedEvent event) async {
-    print('Payment ${event.paymentId}: ${event.success ? 'SUCCESS' : 'FAILED'}');
+    print(
+      'Payment ${event.paymentId}: ${event.success ? 'SUCCESS' : 'FAILED'}',
+    );
   }
 }
 
