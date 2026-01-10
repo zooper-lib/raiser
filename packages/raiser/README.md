@@ -21,7 +21,7 @@ A type-safe, async-first domain event library for Dart. Raiser provides a clean 
 
 ```yaml
 dependencies:
-  raiser: ^2.0.1
+  raiser: ^3.0.0
 ```
 
 ## Quick Start
@@ -227,12 +227,12 @@ For automatic handler discovery and registration, use the companion packages:
 
 ```yaml
 dependencies:
-  raiser: ^2.0.1
-  raiser_annotation: ^2.0.1
+  raiser: ^3.0.0
+  raiser_annotation: ^3.0.0
 
 dev_dependencies:
   build_runner: ^2.4.0
-  raiser_generator: ^2.0.1
+  raiser_generator: ^3.0.0
 ```
 
 See [raiser_generator](https://pub.dev/packages/raiser_generator) for details.
