@@ -106,12 +106,12 @@ void main() {
       var handler2Completed = false;
 
       bus.on<SimpleEvent>((event) async {
-        await Future.delayed(Duration(milliseconds: 50));
+        await Future.delayed(const Duration(milliseconds: 50));
         handler1Completed = true;
       });
 
       bus.on<SimpleEvent>((event) async {
-        await Future.delayed(Duration(milliseconds: 30));
+        await Future.delayed(const Duration(milliseconds: 30));
         handler2Completed = true;
       });
 

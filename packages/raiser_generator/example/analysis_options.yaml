@@ -26,7 +26,7 @@ linter:
     # Avoid using dynamic types.
     avoid_dynamic_calls: true
 
-    # Avoid using print statements in production code. In example code this is acceptable.
+    # Avoid using print statements in production code. In example code this is fine though.
     avoid_print: false
 
     # Prefer using the `final` keyword for variables that are not reassigned.

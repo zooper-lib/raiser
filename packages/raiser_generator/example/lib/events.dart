@@ -1,82 +1,102 @@
-/// Example domain events for testing the Raiser code generator.
-///
-/// These events are used by the example handlers and middleware
-/// to demonstrate various generator configurations.
-
 import 'package:raiser/raiser.dart';
+import 'package:zooper_flutter_core/zooper_flutter_core.dart';
 
 /// Event fired when a user is created.
-class UserCreatedEvent extends RaiserEvent {
-  final String userId;
-  final String email;
-
+final class UserCreatedEvent implements RaiserEvent {
   UserCreatedEvent({
     required this.userId,
     required this.email,
-    super.aggregateId,
-  });
+    EventId? eventId,
+    DateTime? occurredOn,
+    Map<String, Object?> metadata = const {},
+  }) : id = eventId ?? EventId.fromUlid(),
+       occurredOn = occurredOn ?? DateTime.now(),
+       metadata = Map<String, Object?>.unmodifiable(metadata);
+
+  final String userId;
+  final String email;
 
   @override
-  Map<String, dynamic> toMetadataMap() => {
-    ...super.toMetadataMap(),
-    'userId': userId,
-    'email': email,
-  };
+  final EventId id;
+
+  @override
+  final DateTime occurredOn;
+
+  @override
+  final Map<String, Object?> metadata;
 }
 
 /// Event fired when an order is placed.
-class OrderPlacedEvent extends RaiserEvent {
-  final String orderId;
-  final double amount;
-
+final class OrderPlacedEvent implements RaiserEvent {
   OrderPlacedEvent({
     required this.orderId,
     required this.amount,
-    super.aggregateId,
-  });
+    EventId? eventId,
+    DateTime? occurredOn,
+    Map<String, Object?> metadata = const {},
+  }) : id = eventId ?? EventId.fromUlid(),
+       occurredOn = occurredOn ?? DateTime.now(),
+       metadata = Map<String, Object?>.unmodifiable(metadata);
+
+  final String orderId;
+  final double amount;
 
   @override
-  Map<String, dynamic> toMetadataMap() => {
-    ...super.toMetadataMap(),
-    'orderId': orderId,
-    'amount': amount,
-  };
+  final EventId id;
+
+  @override
+  final DateTime occurredOn;
+
+  @override
+  final Map<String, Object?> metadata;
 }
 
 /// Event fired when a payment is processed.
-class PaymentProcessedEvent extends RaiserEvent {
-  final String paymentId;
-  final bool success;
-
+final class PaymentProcessedEvent implements RaiserEvent {
   PaymentProcessedEvent({
     required this.paymentId,
     required this.success,
-    super.aggregateId,
-  });
+    EventId? eventId,
+    DateTime? occurredOn,
+    Map<String, Object?> metadata = const {},
+  }) : id = eventId ?? EventId.fromUlid(),
+       occurredOn = occurredOn ?? DateTime.now(),
+       metadata = Map<String, Object?>.unmodifiable(metadata);
+
+  final String paymentId;
+  final bool success;
 
   @override
-  Map<String, dynamic> toMetadataMap() => {
-    ...super.toMetadataMap(),
-    'paymentId': paymentId,
-    'success': success,
-  };
+  final EventId id;
+
+  @override
+  final DateTime occurredOn;
+
+  @override
+  final Map<String, Object?> metadata;
 }
 
 /// Event fired when inventory is updated.
-class InventoryUpdatedEvent extends RaiserEvent {
-  final String productId;
-  final int quantity;
-
+final class InventoryUpdatedEvent implements RaiserEvent {
   InventoryUpdatedEvent({
     required this.productId,
     required this.quantity,
-    super.aggregateId,
-  });
+    EventId? eventId,
+    DateTime? occurredOn,
+    Map<String, Object?> metadata = const {},
+  }) : id = eventId ?? EventId.fromUlid(),
+       occurredOn = occurredOn ?? DateTime.now(),
+       metadata = Map<String, Object?>.unmodifiable(metadata);
+
+  final String productId;
+  final int quantity;
 
   @override
-  Map<String, dynamic> toMetadataMap() => {
-    ...super.toMetadataMap(),
-    'productId': productId,
-    'quantity': quantity,
-  };
+  final EventId id;
+
+  @override
+  final DateTime occurredOn;
+
+  @override
+  final Map<String, Object?> metadata;
 }

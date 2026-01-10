@@ -1,8 +1,3 @@
-/// Example service interfaces for dependency injection examples.
-///
-/// These interfaces represent typical dependencies that handlers
-/// and middleware might require.
-
 /// Simple logging service interface.
 abstract class Logger {
   void log(String message);

@@ -4,67 +4,89 @@
 // from basic usage to advanced patterns.
 
 import 'package:raiser/raiser.dart';
+import 'package:zooper_flutter_core/zooper_flutter_core.dart';
 
 // ============================================================================
 // DOMAIN EVENTS
 // ============================================================================
 
 /// Basic domain event for user creation
-class UserCreated extends RaiserEvent {
+final class UserCreated implements RaiserEvent {
+  UserCreated({
+    required this.userId,
+    required this.email,
+    EventId? eventId,
+    DateTime? occurredOn,
+    Map<String, Object?> metadata = const {},
+  }) : id = eventId ?? EventId.fromUlid(),
+       occurredOn = occurredOn ?? DateTime.now(),
+       metadata = Map<String, Object?>.unmodifiable(metadata);
+
   final String userId;
   final String email;
 
-  UserCreated({required this.userId, required this.email, super.aggregateId});
+  @override
+  final EventId id;
 
   @override
-  Map<String, dynamic> toMetadataMap() => {
-    ...super.toMetadataMap(),
-    'userId': userId,
-    'email': email,
-  };
+  final DateTime occurredOn;
+
+  @override
+  final Map<String, Object?> metadata;
 }
 
 /// Event for order placement with aggregate ID
-class OrderPlaced extends RaiserEvent {
-  final String orderId;
-  final double amount;
-  final List<String> items;
-
+final class OrderPlaced implements RaiserEvent {
   OrderPlaced({
     required this.orderId,
     required this.amount,
     required this.items,
-    super.aggregateId,
-  });
+    EventId? eventId,
+    DateTime? occurredOn,
+    Map<String, Object?> metadata = const {},
+  }) : id = eventId ?? EventId.fromUlid(),
+       occurredOn = occurredOn ?? DateTime.now(),
+       metadata = Map<String, Object?>.unmodifiable(metadata);
+
+  final String orderId;
+  final double amount;
+  final List<String> items;
 
   @override
-  Map<String, dynamic> toMetadataMap() => {
-    ...super.toMetadataMap(),
-    'orderId': orderId,
-    'amount': amount,
-    'items': items,
-  };
+  final EventId id;
+
+  @override
+  final DateTime occurredOn;
+
+  @override
+  final Map<String, Object?> metadata;
 }
 
 /// Event for payment processing
-class PaymentProcessed extends RaiserEvent {
-  final String paymentId;
-  final String orderId;
-  final bool success;
-
+final class PaymentProcessed implements RaiserEvent {
   PaymentProcessed({
     required this.paymentId,
     required this.orderId,
     required this.success,
-  });
+    EventId? eventId,
+    DateTime? occurredOn,
+    Map<String, Object?> metadata = const {},
+  }) : id = eventId ?? EventId.fromUlid(),
+       occurredOn = occurredOn ?? DateTime.now(),
+       metadata = Map<String, Object?>.unmodifiable(metadata);
+
+  final String paymentId;
+  final String orderId;
+  final bool success;
 
   @override
-  Map<String, dynamic> toMetadataMap() => {
-    ...super.toMetadataMap(),
-    'paymentId': paymentId,
-    'orderId': orderId,
-    'success': success,
-  };
+  final EventId id;
+
+  @override
+  final DateTime occurredOn;
+
+  @override
+  final Map<String, Object?> metadata;
 }
 
 // ============================================================================
@@ -76,7 +98,7 @@ class WelcomeEmailHandler implements EventHandler<UserCreated> {
   @override
   Future<void> handle(UserCreated event) async {
     print('  📧 Sending welcome email to ${event.email}');
-    await Future.delayed(Duration(milliseconds: 50)); // Simulate async work
+    await Future.delayed(const Duration(milliseconds: 50)); // Simulate async work
   }
 }
 
@@ -152,7 +174,7 @@ Future<void> classBasedHandlerExample() async {
       orderId: 'order-001',
       amount: 99.99,
       items: ['Widget A', 'Widget B'],
-      aggregateId: 'user-002',
+      metadata: {'aggregateId': 'user-002'},
     ),
   );
 }
@@ -330,21 +352,17 @@ Future<void> aggregateIdExample() async {
 
   // Track all events for a specific user aggregate
   bus.on<UserCreated>((event) async {
-    if (event.aggregateId != null) {
+    if (event.metadata['aggregateId'] != null) {
       userEvents.add(event);
     }
-    print(
-      '  👤 User ${event.userId} created (aggregate: ${event.aggregateId})',
-    );
+    print('  👤 User ${event.userId} created (aggregate: ${event.metadata['aggregateId']})');
   });
 
   bus.on<OrderPlaced>((event) async {
-    if (event.aggregateId != null) {
+    if (event.metadata['aggregateId'] != null) {
       userEvents.add(event);
     }
-    print(
-      '  🛒 Order ${event.orderId} placed (aggregate: ${event.aggregateId})',
-    );
+    print('  🛒 Order ${event.orderId} placed (aggregate: ${event.metadata['aggregateId']})');
   });
 
   // Events linked to user aggregate
@@ -354,7 +372,7 @@ Future<void> aggregateIdExample() async {
     UserCreated(
       userId: userId,
       email: 'customer@shop.com',
-      aggregateId: userId,
+      metadata: {'aggregateId': userId},
     ),
   );
 
@@ -363,7 +381,7 @@ Future<void> aggregateIdExample() async {
       orderId: 'order-A',
       amount: 150.00,
       items: ['Product X'],
-      aggregateId: userId,
+      metadata: {'aggregateId': userId},
     ),
   );
 
@@ -372,7 +390,7 @@ Future<void> aggregateIdExample() async {
       orderId: 'order-B',
       amount: 75.50,
       items: ['Product Y', 'Product Z'],
-      aggregateId: userId,
+      metadata: {'aggregateId': userId},
     ),
   );
 
@@ -387,15 +405,15 @@ Future<void> metadataExample() async {
     orderId: 'order-999',
     amount: 299.99,
     items: ['Premium Widget', 'Deluxe Gadget'],
-    aggregateId: 'user-500',
+    metadata: {'aggregateId': 'user-500'},
   );
 
   print('  Event ID: ${event.id}');
-  print('  Timestamp: ${event.timestamp}');
-  print('  Aggregate ID: ${event.aggregateId}');
+  print('  Occurred On: ${event.occurredOn}');
+  print('  Aggregate ID: ${event.metadata['aggregateId']}');
   print('  Metadata Map:');
 
-  final metadata = event.toMetadataMap();
+  final metadata = event.metadata;
   metadata.forEach((key, value) {
     print('    $key: $value');
   });

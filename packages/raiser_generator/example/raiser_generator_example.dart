@@ -8,7 +8,7 @@
 /// cd example
 /// dart run build_runner build
 /// ```
-library raiser_generator_example;
+library;
 
 import 'package:raiser/raiser.dart';
 import 'package:raiser_generator_example/raiser.g.dart';
