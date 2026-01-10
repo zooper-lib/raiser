@@ -1,9 +1,3 @@
-/// Error handling strategies for the EventBus.
-///
-/// Configures how the EventBus handles exceptions thrown by handlers
-/// during event publication.
-library;
-
 /// Defines how the EventBus handles handler exceptions.
 enum ErrorStrategy {
   /// Stop propagation on first error, rethrow immediately.

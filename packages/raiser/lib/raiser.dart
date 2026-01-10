@@ -43,13 +43,17 @@
 /// ```
 library;
 
+import 'src/events/raiser_event.dart';
+import 'src/handlers/event_handler.dart';
+import 'src/handlers/subscription.dart';
+
+// Event bus and error handling
+export 'src/bus/error_strategy.dart';
+export 'src/bus/event_bus.dart';
+
 // Core event types
 export 'src/events/raiser_event.dart';
 
 // Handler interfaces
 export 'src/handlers/event_handler.dart';
 export 'src/handlers/subscription.dart';
-
-// Event bus and error handling
-export 'src/bus/event_bus.dart';
-export 'src/bus/error_strategy.dart';

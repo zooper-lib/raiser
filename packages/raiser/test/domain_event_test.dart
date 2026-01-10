@@ -1,24 +1,44 @@
 import 'package:raiser/raiser.dart';
 import 'package:test/test.dart';
+import 'package:zooper_flutter_core/zooper_flutter_core.dart';
 
 /// Simple concrete RaiserEvent for testing purposes.
-class TestEvent extends RaiserEvent {
-  final String name;
-
-  TestEvent({required this.name, super.id, super.timestamp, super.aggregateId});
+class TestEvent implements RaiserEvent {
+  @override
+  final EventId id;
 
   @override
-  Map<String, dynamic> toMetadataMap() => {
-    ...super.toMetadataMap(),
-    'name': name,
-  };
+  final DateTime occurredOn;
+
+  @override
+  final Map<String, Object?> metadata;
+
+  final String name;
+
+  TestEvent({
+    required this.name,
+    EventId? id,
+    DateTime? occurredOn,
+    Map<String, Object?>? metadata,
+  }) : id = id ?? EventId.fromUlid(),
+       occurredOn = occurredOn ?? DateTime.now(),
+       metadata = Map<String, Object?>.unmodifiable(metadata ?? const <String, Object?>{});
+
+  Map<String, Object?> toMetadataMap() {
+    return <String, Object?>{
+      'id': id.value,
+      'occurredOn': occurredOn.toIso8601String(),
+      'metadata': metadata,
+      'name': name,
+    };
+  }
 
   /// Reconstructs a TestEvent from a metadata map.
   static TestEvent fromMetadataMap(Map<String, dynamic> map) {
     return TestEvent(
-      id: map['id'] as String,
-      timestamp: DateTime.parse(map['timestamp'] as String),
-      aggregateId: map['aggregateId'] as String?,
+      id: EventId.fromJson(map['id'] as String),
+      occurredOn: DateTime.parse(map['occurredOn'] as String),
+      metadata: Map<String, Object?>.from(map['metadata'] as Map),
       name: map['name'] as String,
     );
   }
@@ -33,52 +53,39 @@ void main() {
       expect(ids.length, equals(events.length));
     });
 
-    // **Feature: core-event-system, Property 3: Aggregate ID Preservation**
-    test('Property 3: aggregate ID is preserved exactly as provided', () {
-      final testIds = ['agg-1', 'agg-123', 'user-abc', 'order-xyz-999'];
-      for (final aggregateId in testIds) {
-        final event = TestEvent(name: 'test', aggregateId: aggregateId);
-        expect(event.aggregateId, equals(aggregateId));
-      }
-    });
+    // **Feature: core-event-system, Property 3: Metadata Preservation**
+    test('Property 3: metadata map preserves provided keys and values', () {
+      final TestEvent event = TestEvent(name: 'test', metadata: <String, Object?>{'aggregateId': 'agg-123', 'correlationId': 'corr-1'});
 
-    test('Property 3: null aggregate ID is preserved', () {
-      final event = TestEvent(name: 'test');
-      expect(event.aggregateId, isNull);
+      expect(event.metadata['aggregateId'], equals('agg-123'));
+      expect(event.metadata['correlationId'], equals('corr-1'));
     });
 
     // **Feature: core-event-system, Property 2: Event Metadata Round-Trip**
-    test(
-      'Property 2: serializing and deserializing preserves event metadata',
-      () {
-        final testCases = [
-          TestEvent(name: 'simple'),
-          TestEvent(name: 'with-aggregate', aggregateId: 'agg-123'),
-          TestEvent(name: 'special chars !@#'),
-        ];
+    test('Property 2: serializing and deserializing preserves event metadata', () {
+      final testCases = <TestEvent>[
+        TestEvent(name: 'simple'),
+        TestEvent(name: 'with-aggregate', metadata: <String, Object?>{'aggregateId': 'agg-123'}),
+        TestEvent(name: 'special chars !@#'),
+      ];
 
-        for (final original in testCases) {
-          final map = original.toMetadataMap();
-          final reconstructed = TestEvent.fromMetadataMap(map);
+      for (final original in testCases) {
+        final Map<String, Object?> map = original.toMetadataMap();
+        final TestEvent reconstructed = TestEvent.fromMetadataMap(Map<String, dynamic>.from(map));
 
-          expect(reconstructed.id, equals(original.id));
-          expect(reconstructed.timestamp, equals(original.timestamp));
-          expect(reconstructed.aggregateId, equals(original.aggregateId));
-          expect(reconstructed.name, equals(original.name));
-        }
-      },
-    );
+        expect(reconstructed.id, equals(original.id));
+        expect(reconstructed.occurredOn, equals(original.occurredOn));
+        expect(reconstructed.name, equals(original.name));
+      }
+    });
 
-    test('timestamp is automatically set', () {
+    test('occurredOn is automatically set', () {
       final before = DateTime.now();
       final event = TestEvent(name: 'test');
       final after = DateTime.now();
 
-      expect(
-        event.timestamp.isAfter(before.subtract(Duration(seconds: 1))),
-        isTrue,
-      );
-      expect(event.timestamp.isBefore(after.add(Duration(seconds: 1))), isTrue);
+      expect(event.occurredOn.isAfter(before.subtract(const Duration(seconds: 1))), isTrue);
+      expect(event.occurredOn.isBefore(after.add(const Duration(seconds: 1))), isTrue);
     });
   });
 }

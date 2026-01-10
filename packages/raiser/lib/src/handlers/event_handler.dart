@@ -1,10 +1,3 @@
-/// Event handler interface for type-safe event handling.
-///
-/// Provides a generic interface for handling events of a specific type.
-/// Handlers are invoked asynchronously by the EventBus when matching
-/// events are published.
-library;
-
 /// Abstract interface for type-safe event handlers.
 ///
 /// Implement this interface to create handlers that process specific

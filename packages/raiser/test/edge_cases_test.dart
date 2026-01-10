@@ -1,14 +1,31 @@
 import 'package:raiser/raiser.dart';
 import 'package:test/test.dart';
+import 'package:zooper_flutter_core/zooper_flutter_core.dart';
 
 /// Edge case and stress tests for the EventBus.
 ///
 /// These tests verify behavior in unusual or extreme scenarios.
-class TestEvent extends RaiserEvent {
+final class TestEvent implements RaiserEvent {
+  TestEvent(
+    this.value, {
+    EventId? eventId,
+    DateTime? occurredOn,
+    Map<String, Object?> metadata = const {},
+  }) : id = eventId ?? EventId.fromUlid(),
+       occurredOn = occurredOn ?? DateTime.now(),
+       metadata = Map<String, Object?>.unmodifiable(metadata);
+
   final String value;
-  TestEvent(this.value);
 
   @override
+  final EventId id;
+
+  @override
+  final DateTime occurredOn;
+
+  @override
+  final Map<String, Object?> metadata;
+
   Map<String, dynamic> toMetadataMap() => {'value': value};
 }
 
@@ -85,14 +102,8 @@ void main() {
         final order = <int>[];
 
         bus.on<TestEvent>((e) async => order.add(0), priority: 0);
-        bus.on<TestEvent>(
-          (e) async => order.add(-2147483648),
-          priority: -2147483648,
-        );
-        bus.on<TestEvent>(
-          (e) async => order.add(2147483647),
-          priority: 2147483647,
-        );
+        bus.on<TestEvent>((e) async => order.add(-2147483648), priority: -2147483648);
+        bus.on<TestEvent>((e) async => order.add(2147483647), priority: 2147483647);
 
         await bus.publish(TestEvent('test'));
 
@@ -131,10 +142,7 @@ void main() {
 
         await bus.publish(TestEvent('initial'));
 
-        expect(
-          received,
-          equals(['initial', 'nested-1', 'nested-2', 'nested-3']),
-        );
+        expect(received, equals(['initial', 'nested-1', 'nested-2', 'nested-3']));
       });
 
       test('many concurrent publishes complete correctly', () async {
@@ -142,13 +150,11 @@ void main() {
         final received = <String>{};
 
         bus.on<TestEvent>((event) async {
-          await Future.delayed(Duration(milliseconds: 1));
+          await Future.delayed(const Duration(milliseconds: 1));
           received.add(event.value);
         });
 
-        await Future.wait(
-          List.generate(100, (i) => bus.publish(TestEvent('event-$i'))),
-        );
+        await Future.wait(List.generate(100, (i) => bus.publish(TestEvent('event-$i'))));
 
         expect(received.length, equals(100));
       });
@@ -218,16 +224,7 @@ void main() {
           throw Exception('error 3');
         });
 
-        expect(
-          () => bus.publish(TestEvent('test')),
-          throwsA(
-            isA<AggregateException>().having(
-              (e) => e.errors.length,
-              'error count',
-              equals(3),
-            ),
-          ),
-        );
+        expect(() => bus.publish(TestEvent('test')), throwsA(isA<AggregateException>().having((e) => e.errors.length, 'error count', equals(3))));
       });
     });
 
@@ -279,10 +276,10 @@ void main() {
       final bus = EventBus();
       final order = <String>[];
 
-      bus.addMiddleware((event, next) async {
+      bus.addMiddleware((RaiserEvent event, Future<void> Function() next) async {
         order.add('outer:before');
         // Add another middleware during execution
-        bus.addMiddleware((event, next) async {
+        bus.addMiddleware((RaiserEvent event, Future<void> Function() next) async {
           order.add('dynamic:before');
           await next();
           order.add('dynamic:after');
@@ -312,7 +309,7 @@ void main() {
       final order = <String>[];
       late Subscription middlewareSub;
 
-      middlewareSub = bus.addMiddleware((event, next) async {
+      middlewareSub = bus.addMiddleware((RaiserEvent event, Future<void> Function() next) async {
         order.add('middleware:before');
         middlewareSub.cancel(); // Cancel self
         await next();
@@ -343,7 +340,7 @@ void main() {
 
       for (var i = 0; i < 50; i++) {
         final index = i;
-        bus.addMiddleware((event, next) async {
+        bus.addMiddleware((RaiserEvent event, Future<void> Function() next) async {
           order.add('m$index:before');
           await next();
           order.add('m$index:after');
@@ -366,10 +363,26 @@ void main() {
 }
 
 /// Another event type for type isolation tests.
-class OtherEvent extends RaiserEvent {
+final class OtherEvent implements RaiserEvent {
+  OtherEvent(
+    this.value, {
+    EventId? eventId,
+    DateTime? occurredOn,
+    Map<String, Object?> metadata = const {},
+  }) : id = eventId ?? EventId.fromUlid(),
+       occurredOn = occurredOn ?? DateTime.now(),
+       metadata = Map<String, Object?>.unmodifiable(metadata);
+
   final int value;
-  OtherEvent(this.value);
 
   @override
+  final EventId id;
+
+  @override
+  final DateTime occurredOn;
+
+  @override
+  final Map<String, Object?> metadata;
+
   Map<String, dynamic> toMetadataMap() => {'value': value};
 }

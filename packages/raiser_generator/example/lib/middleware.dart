@@ -1,13 +1,4 @@
-/// Example middleware demonstrating various @RaiserMiddleware configurations.
-///
-/// This file contains middleware with different configurations:
-/// - Basic middleware with default settings
-/// - Middleware with priority
-/// - Middleware with named bus
-/// - Middleware with dependency injection
-
 import 'package:raiser_annotation/raiser_annotation.dart';
-
 import 'services.dart';
 
 // ============================================================================

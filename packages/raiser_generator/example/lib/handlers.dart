@@ -1,12 +1,3 @@
-/// Example handlers demonstrating various @RaiserHandler configurations.
-///
-/// This file contains handlers with different configurations:
-/// - Basic handler with default settings
-/// - Handler with priority
-/// - Handler with named bus
-/// - Handler with dependency injection
-/// - Multiple handlers for the same event type
-
 import 'package:raiser/raiser.dart';
 import 'package:raiser_annotation/raiser_annotation.dart';
 
