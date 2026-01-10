@@ -189,8 +189,7 @@ void main() {
           expect(
             executionOrder,
             equals(List.generate(totalHandlers, (i) => i)),
-            reason:
-                'All $totalHandlers handlers should execute with $failCount failures',
+            reason: 'All $totalHandlers handlers should execute with $failCount failures',
           );
         }
       });
@@ -294,8 +293,7 @@ void main() {
           expect(
             executionOrder,
             equals(List.generate(totalHandlers, (i) => i)),
-            reason:
-                'All $totalHandlers handlers should execute with $failCount failures',
+            reason: 'All $totalHandlers handlers should execute with $failCount failures',
           );
         }
       });
@@ -422,7 +420,7 @@ void main() {
           }, priority: 20);
 
           bus.on<TestEvent>((event) async {
-            throw FormatException('Error 3');
+            throw const FormatException('Error 3');
           }, priority: 10);
 
           // Should complete without throwing

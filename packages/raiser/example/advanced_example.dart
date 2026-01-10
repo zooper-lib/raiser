@@ -8,84 +8,126 @@
 // - Testing patterns
 
 import 'package:raiser/raiser.dart';
+import 'package:zooper_flutter_core/zooper_flutter_core.dart';
 
 // ============================================================================
 // DOMAIN EVENTS FOR E-COMMERCE SCENARIO
 // ============================================================================
 
-class CartItemAdded extends RaiserEvent {
-  final String productId;
-  final int quantity;
-  final double price;
-
+final class CartItemAdded implements RaiserEvent {
   CartItemAdded({
     required this.productId,
     required this.quantity,
     required this.price,
-    super.aggregateId,
-  });
+    EventId? eventId,
+    DateTime? occurredOn,
+    Map<String, Object?> metadata = const {},
+  }) : id = eventId ?? EventId.fromUlid(),
+       occurredOn = occurredOn ?? DateTime.now(),
+       metadata = Map<String, Object?>.unmodifiable(metadata);
+
+  final String productId;
+  final int quantity;
+  final double price;
 
   @override
-  Map<String, dynamic> toMetadataMap() => {
-    ...super.toMetadataMap(),
-    'productId': productId,
-    'quantity': quantity,
-    'price': price,
-  };
+  final EventId id;
+
+  @override
+  final DateTime occurredOn;
+
+  @override
+  final Map<String, Object?> metadata;
 }
 
-class CartItemRemoved extends RaiserEvent {
+final class CartItemRemoved implements RaiserEvent {
+  CartItemRemoved({
+    required this.productId,
+    EventId? eventId,
+    DateTime? occurredOn,
+    Map<String, Object?> metadata = const {},
+  }) : id = eventId ?? EventId.fromUlid(),
+       occurredOn = occurredOn ?? DateTime.now(),
+       metadata = Map<String, Object?>.unmodifiable(metadata);
+
   final String productId;
 
-  CartItemRemoved({required this.productId, super.aggregateId});
+  @override
+  final EventId id;
 
   @override
-  Map<String, dynamic> toMetadataMap() => {
-    ...super.toMetadataMap(),
-    'productId': productId,
-  };
+  final DateTime occurredOn;
+
+  @override
+  final Map<String, Object?> metadata;
 }
 
-class CheckoutStarted extends RaiserEvent {
+final class CheckoutStarted implements RaiserEvent {
+  CheckoutStarted({
+    required this.totalAmount,
+    EventId? eventId,
+    DateTime? occurredOn,
+    Map<String, Object?> metadata = const {},
+  }) : id = eventId ?? EventId.fromUlid(),
+       occurredOn = occurredOn ?? DateTime.now(),
+       metadata = Map<String, Object?>.unmodifiable(metadata);
+
   final double totalAmount;
 
-  CheckoutStarted({required this.totalAmount, super.aggregateId});
+  @override
+  final EventId id;
 
   @override
-  Map<String, dynamic> toMetadataMap() => {
-    ...super.toMetadataMap(),
-    'totalAmount': totalAmount,
-  };
+  final DateTime occurredOn;
+
+  @override
+  final Map<String, Object?> metadata;
 }
 
-class PaymentReceived extends RaiserEvent {
-  final String transactionId;
-  final double amount;
-
+final class PaymentReceived implements RaiserEvent {
   PaymentReceived({
     required this.transactionId,
     required this.amount,
-    super.aggregateId,
-  });
+    EventId? eventId,
+    DateTime? occurredOn,
+    Map<String, Object?> metadata = const {},
+  }) : id = eventId ?? EventId.fromUlid(),
+       occurredOn = occurredOn ?? DateTime.now(),
+       metadata = Map<String, Object?>.unmodifiable(metadata);
+
+  final String transactionId;
+  final double amount;
 
   @override
-  Map<String, dynamic> toMetadataMap() => {
-    ...super.toMetadataMap(),
-    'transactionId': transactionId,
-    'amount': amount,
-  };
+  final EventId id;
+
+  @override
+  final DateTime occurredOn;
+
+  @override
+  final Map<String, Object?> metadata;
 }
 
-class OrderShipped extends RaiserEvent {
+final class OrderShipped implements RaiserEvent {
+  OrderShipped({
+    required this.trackingNumber,
+    EventId? eventId,
+    DateTime? occurredOn,
+    Map<String, Object?> metadata = const {},
+  }) : id = eventId ?? EventId.fromUlid(),
+       occurredOn = occurredOn ?? DateTime.now(),
+       metadata = Map<String, Object?>.unmodifiable(metadata);
+
   final String trackingNumber;
 
-  OrderShipped({required this.trackingNumber, super.aggregateId});
+  @override
+  final EventId id;
 
   @override
-  Map<String, dynamic> toMetadataMap() => {
-    ...super.toMetadataMap(),
-    'trackingNumber': trackingNumber,
-  };
+  final DateTime occurredOn;
+
+  @override
+  final Map<String, Object?> metadata;
 }
 
 // ============================================================================
@@ -106,7 +148,7 @@ class EventStore {
 
   /// Get all events for an aggregate
   List<RaiserEvent> getEventsForAggregate(String aggregateId) {
-    return _events.where((e) => e.aggregateId == aggregateId).toList();
+    return _events.where((e) => e.metadata['aggregateId'] == aggregateId).toList();
   }
 
   /// Get all events of a specific type
@@ -123,15 +165,15 @@ class EventStore {
 
   Future<void> _publishTyped(EventBus bus, RaiserEvent event) async {
     switch (event) {
-      case CartItemAdded e:
+      case final CartItemAdded e:
         await bus.publish(e);
-      case CartItemRemoved e:
+      case final CartItemRemoved e:
         await bus.publish(e);
-      case CheckoutStarted e:
+      case final CheckoutStarted e:
         await bus.publish(e);
-      case PaymentReceived e:
+      case final PaymentReceived e:
         await bus.publish(e);
-      case OrderShipped e:
+      case final OrderShipped e:
         await bus.publish(e);
     }
   }
@@ -154,7 +196,7 @@ class CartProjection implements EventHandler<CartItemAdded> {
 
   @override
   Future<void> handle(CartItemAdded event) async {
-    final cartId = event.aggregateId ?? 'default';
+    final cartId = event.metadata['aggregateId'] as String? ?? 'default';
     _carts.putIfAbsent(cartId, () => {});
 
     final existing = _carts[cartId]![event.productId];
@@ -174,7 +216,7 @@ class CartProjection implements EventHandler<CartItemAdded> {
   }
 
   void handleRemoval(CartItemRemoved event) {
-    final cartId = event.aggregateId ?? 'default';
+    final cartId = event.metadata['aggregateId'] as String? ?? 'default';
     _carts[cartId]?.remove(event.productId);
   }
 }
@@ -209,7 +251,7 @@ class OrderFulfillmentSaga {
   }
 
   Future<void> _onCheckoutStarted(CheckoutStarted event) async {
-    final orderId = event.aggregateId ?? event.id;
+    final orderId = event.metadata['aggregateId'] as String? ?? event.id.value;
     _orderStates[orderId] = OrderState(
       orderId: orderId,
       status: 'awaiting_payment',
@@ -219,7 +261,7 @@ class OrderFulfillmentSaga {
   }
 
   Future<void> _onPaymentReceived(PaymentReceived event) async {
-    final orderId = event.aggregateId;
+    final orderId = event.metadata['aggregateId'] as String?;
     if (orderId != null && _orderStates.containsKey(orderId)) {
       _orderStates[orderId] = _orderStates[orderId]!.copyWith(
         status: 'paid',
@@ -230,7 +272,7 @@ class OrderFulfillmentSaga {
   }
 
   Future<void> _onOrderShipped(OrderShipped event) async {
-    final orderId = event.aggregateId;
+    final orderId = event.metadata['aggregateId'] as String?;
     if (orderId != null && _orderStates.containsKey(orderId)) {
       _orderStates[orderId] = _orderStates[orderId]!.copyWith(
         status: 'shipped',
@@ -339,7 +381,7 @@ Future<void> eventSourcingExample() async {
       productId: 'SKU-A',
       quantity: 2,
       price: 29.99,
-      aggregateId: cartId,
+      metadata: {'aggregateId': cartId},
     ),
   );
 
@@ -348,17 +390,17 @@ Future<void> eventSourcingExample() async {
       productId: 'SKU-B',
       quantity: 1,
       price: 49.99,
-      aggregateId: cartId,
+      metadata: {'aggregateId': cartId},
     ),
   );
 
-  await store.append(CartItemRemoved(productId: 'SKU-A', aggregateId: cartId));
+  await store.append(CartItemRemoved(productId: 'SKU-A', metadata: {'aggregateId': cartId}));
 
   // Query event history
   final cartEvents = store.getEventsForAggregate(cartId);
   print('  Events for $cartId: ${cartEvents.length}');
   for (final event in cartEvents) {
-    print('    - ${event.runtimeType} at ${event.timestamp}');
+    print('    - ${event.runtimeType} at ${event.occurredOn}');
   }
 }
 
@@ -372,18 +414,18 @@ Future<void> sagaExample() async {
   const orderId = 'order-500';
 
   // Simulate order flow
-  await bus.publish(CheckoutStarted(totalAmount: 199.99, aggregateId: orderId));
+  await bus.publish(CheckoutStarted(totalAmount: 199.99, metadata: {'aggregateId': orderId}));
 
   await bus.publish(
     PaymentReceived(
       transactionId: 'txn-12345',
       amount: 199.99,
-      aggregateId: orderId,
+      metadata: {'aggregateId': orderId},
     ),
   );
 
   await bus.publish(
-    OrderShipped(trackingNumber: 'TRACK-ABC123', aggregateId: orderId),
+    OrderShipped(trackingNumber: 'TRACK-ABC123', metadata: {'aggregateId': orderId}),
   );
 
   // Check final state
@@ -413,7 +455,7 @@ Future<void> projectionReplayExample() async {
       productId: 'ITEM-1',
       quantity: 3,
       price: 10.00,
-      aggregateId: cartId,
+      metadata: {'aggregateId': cartId},
     ),
   );
 
@@ -422,7 +464,7 @@ Future<void> projectionReplayExample() async {
       productId: 'ITEM-2',
       quantity: 2,
       price: 25.00,
-      aggregateId: cartId,
+      metadata: {'aggregateId': cartId},
     ),
   );
 
@@ -467,7 +509,7 @@ Future<void> multiBusExample() async {
     PaymentReceived(
       transactionId: 'multi-bus-txn',
       amount: 500.00,
-      aggregateId: 'order-multi',
+      metadata: {'aggregateId': 'order-multi'},
     ),
   );
 }

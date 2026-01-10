@@ -1,21 +1,54 @@
 import 'package:raiser/raiser.dart';
 import 'package:test/test.dart';
+import 'package:zooper_flutter_core/zooper_flutter_core.dart';
 
 /// Simple event for middleware testing.
-class TestEvent extends RaiserEvent {
+final class TestEvent implements RaiserEvent {
+  TestEvent(
+    this.message, {
+    EventId? eventId,
+    DateTime? occurredOn,
+    Map<String, Object?> metadata = const {},
+  }) : id = eventId ?? EventId.fromUlid(),
+       occurredOn = occurredOn ?? DateTime.now(),
+       metadata = Map<String, Object?>.unmodifiable(metadata);
+
   final String message;
-  TestEvent(this.message);
 
   @override
+  final EventId id;
+
+  @override
+  final DateTime occurredOn;
+
+  @override
+  final Map<String, Object?> metadata;
+
   Map<String, dynamic> toMetadataMap() => {'message': message};
 }
 
 /// Another event type for testing type-specific behavior.
-class OtherEvent extends RaiserEvent {
+final class OtherEvent implements RaiserEvent {
+  OtherEvent(
+    this.value, {
+    EventId? eventId,
+    DateTime? occurredOn,
+    Map<String, Object?> metadata = const {},
+  }) : id = eventId ?? EventId.fromUlid(),
+       occurredOn = occurredOn ?? DateTime.now(),
+       metadata = Map<String, Object?>.unmodifiable(metadata);
+
   final int value;
-  OtherEvent(this.value);
 
   @override
+  final EventId id;
+
+  @override
+  final DateTime occurredOn;
+
+  @override
+  final Map<String, Object?> metadata;
+
   Map<String, dynamic> toMetadataMap() => {'value': value};
 }
 
@@ -112,7 +145,7 @@ void main() {
         final bus = EventBus();
         final logs = <String>[];
 
-        final subscription = bus.addMiddleware((event, next) async {
+        final subscription = bus.addMiddleware((RaiserEvent event, Future<void> Function() next) async {
           logs.add('before');
           await next();
           logs.add('after');
@@ -159,10 +192,7 @@ void main() {
 
         await bus.publish(TestEvent('hello'));
 
-        expect(
-          middleware.logs,
-          equals(['before:TestEvent', 'after:TestEvent']),
-        );
+        expect(middleware.logs, equals(['before:TestEvent', 'after:TestEvent']));
         expect(handler.received, equals(['hello']));
       });
 
@@ -173,10 +203,7 @@ void main() {
         bus.addMiddleware(middleware);
         await bus.publish(TestEvent('hello'));
 
-        expect(
-          middleware.logs,
-          equals(['before:TestEvent', 'after:TestEvent']),
-        );
+        expect(middleware.logs, equals(['before:TestEvent', 'after:TestEvent']));
       });
 
       test('multiple middleware form a pipeline', () async {
@@ -196,21 +223,15 @@ void main() {
         // Default priority is 0, so execution order depends on registration order
         // All middleware should wrap the handler
         expect(executionLog, contains('handler'));
-        expect(
-          executionLog.where((e) => e.contains('before')).length,
-          equals(3),
-        );
-        expect(
-          executionLog.where((e) => e.contains('after')).length,
-          equals(3),
-        );
+        expect(executionLog.where((e) => e.contains('before')).length, equals(3));
+        expect(executionLog.where((e) => e.contains('after')).length, equals(3));
       });
 
       test('function middleware works correctly', () async {
         final bus = EventBus();
         final logs = <String>[];
 
-        bus.addMiddleware((event, next) async {
+        bus.addMiddleware((RaiserEvent event, Future<void> Function() next) async {
           logs.add('before');
           await next();
           logs.add('after');
@@ -231,18 +252,9 @@ void main() {
         final bus = EventBus();
         final executionLog = <String>[];
 
-        bus.addMiddleware(
-          OrderTrackingMiddleware('low', executionLog),
-          priority: -10,
-        );
-        bus.addMiddleware(
-          OrderTrackingMiddleware('high', executionLog),
-          priority: 100,
-        );
-        bus.addMiddleware(
-          OrderTrackingMiddleware('mid', executionLog),
-          priority: 50,
-        );
+        bus.addMiddleware(OrderTrackingMiddleware('low', executionLog), priority: -10);
+        bus.addMiddleware(OrderTrackingMiddleware('high', executionLog), priority: 100);
+        bus.addMiddleware(OrderTrackingMiddleware('mid', executionLog), priority: 50);
 
         bus.on<TestEvent>((event) async {
           executionLog.add('handler');
@@ -264,18 +276,9 @@ void main() {
         final bus = EventBus();
         final executionLog = <String>[];
 
-        bus.addMiddleware(
-          OrderTrackingMiddleware('first', executionLog),
-          priority: 0,
-        );
-        bus.addMiddleware(
-          OrderTrackingMiddleware('second', executionLog),
-          priority: 0,
-        );
-        bus.addMiddleware(
-          OrderTrackingMiddleware('third', executionLog),
-          priority: 0,
-        );
+        bus.addMiddleware(OrderTrackingMiddleware('first', executionLog), priority: 0);
+        bus.addMiddleware(OrderTrackingMiddleware('second', executionLog), priority: 0);
+        bus.addMiddleware(OrderTrackingMiddleware('third', executionLog), priority: 0);
 
         bus.on<TestEvent>((event) async {
           executionLog.add('handler');
@@ -294,14 +297,8 @@ void main() {
         final bus = EventBus();
         final executionLog = <String>[];
 
-        bus.addMiddleware(
-          OrderTrackingMiddleware('negative', executionLog),
-          priority: -50,
-        );
-        bus.addMiddleware(
-          OrderTrackingMiddleware('zero', executionLog),
-          priority: 0,
-        );
+        bus.addMiddleware(OrderTrackingMiddleware('negative', executionLog), priority: -50);
+        bus.addMiddleware(OrderTrackingMiddleware('zero', executionLog), priority: 0);
 
         bus.on<TestEvent>((event) async {
           executionLog.add('handler');
@@ -347,18 +344,9 @@ void main() {
         final bus = EventBus();
         final executionLog = <String>[];
 
-        bus.addMiddleware(
-          OrderTrackingMiddleware('outer', executionLog),
-          priority: 100,
-        );
-        bus.addMiddleware(
-          ShortCircuitMiddleware(shouldShortCircuit: true),
-          priority: 50,
-        );
-        bus.addMiddleware(
-          OrderTrackingMiddleware('inner', executionLog),
-          priority: 0,
-        );
+        bus.addMiddleware(OrderTrackingMiddleware('outer', executionLog), priority: 100);
+        bus.addMiddleware(ShortCircuitMiddleware(shouldShortCircuit: true), priority: 50);
+        bus.addMiddleware(OrderTrackingMiddleware('inner', executionLog), priority: 0);
 
         bus.on<TestEvent>((event) async {
           executionLog.add('handler');
@@ -376,16 +364,7 @@ void main() {
         final bus = EventBus(errorStrategy: ErrorStrategy.stop);
         bus.addMiddleware(ErrorMiddleware('middleware error'));
 
-        expect(
-          () => bus.publish(TestEvent('test')),
-          throwsA(
-            isA<Exception>().having(
-              (e) => e.toString(),
-              'message',
-              contains('middleware error'),
-            ),
-          ),
-        );
+        expect(() => bus.publish(TestEvent('test')), throwsA(isA<Exception>().having((e) => e.toString(), 'message', contains('middleware error'))));
       });
 
       test('middleware error propagates even with swallow strategy', () async {
@@ -394,16 +373,7 @@ void main() {
         final bus = EventBus(errorStrategy: ErrorStrategy.swallow);
         bus.addMiddleware(ErrorMiddleware('middleware error'));
 
-        expect(
-          () => bus.publish(TestEvent('test')),
-          throwsA(
-            isA<Exception>().having(
-              (e) => e.toString(),
-              'message',
-              contains('middleware error'),
-            ),
-          ),
-        );
+        expect(() => bus.publish(TestEvent('test')), throwsA(isA<Exception>().having((e) => e.toString(), 'message', contains('middleware error'))));
       });
 
       test('handler errors are caught by error strategy', () async {
@@ -417,7 +387,7 @@ void main() {
 
         // Middleware that passes through
         final logs = <String>[];
-        bus.addMiddleware((event, next) async {
+        bus.addMiddleware((RaiserEvent event, Future<void> Function() next) async {
           logs.add('before');
           await next();
           logs.add('after');
@@ -443,7 +413,7 @@ void main() {
         final bus = EventBus();
         final receivedTypes = <Type>[];
 
-        bus.addMiddleware((event, next) async {
+        bus.addMiddleware((RaiserEvent event, Future<void> Function() next) async {
           receivedTypes.add(event.runtimeType);
           await next();
         });
@@ -461,7 +431,7 @@ void main() {
         final bus = EventBus();
         final processedEvents = <String>[];
 
-        bus.addMiddleware((event, next) async {
+        bus.addMiddleware((RaiserEvent event, Future<void> Function() next) async {
           if (event is TestEvent) {
             processedEvents.add('processed:${event.message}');
           }
@@ -484,14 +454,8 @@ void main() {
         final bus = EventBus();
         final state = <String, dynamic>{};
 
-        bus.addMiddleware(
-          StateModifyingMiddleware(state, 'step1', 'done'),
-          priority: 100,
-        );
-        bus.addMiddleware(
-          StateModifyingMiddleware(state, 'step2', 'done'),
-          priority: 50,
-        );
+        bus.addMiddleware(StateModifyingMiddleware(state, 'step1', 'done'), priority: 100);
+        bus.addMiddleware(StateModifyingMiddleware(state, 'step2', 'done'), priority: 50);
 
         bus.on<TestEvent>((event) async {
           state['handler'] = 'executed';
@@ -499,35 +463,29 @@ void main() {
 
         await bus.publish(TestEvent('test'));
 
-        expect(
-          state,
-          equals({'step1': 'done', 'step2': 'done', 'handler': 'executed'}),
-        );
+        expect(state, equals({'step1': 'done', 'step2': 'done', 'handler': 'executed'}));
       });
 
-      test(
-        'middleware state changes are visible to inner middleware',
-        () async {
-          final bus = EventBus();
-          final state = <String, dynamic>{};
-          var step2SawStep1 = false;
+      test('middleware state changes are visible to inner middleware', () async {
+        final bus = EventBus();
+        final state = <String, dynamic>{};
+        var step2SawStep1 = false;
 
-          bus.addMiddleware((event, next) async {
-            state['step1'] = true;
-            await next();
-          }, priority: 100);
+        bus.addMiddleware((RaiserEvent event, Future<void> Function() next) async {
+          state['step1'] = true;
+          await next();
+        }, priority: 100);
 
-          bus.addMiddleware((event, next) async {
-            step2SawStep1 = state['step1'] == true;
-            await next();
-          }, priority: 50);
+        bus.addMiddleware((RaiserEvent event, Future<void> Function() next) async {
+          step2SawStep1 = state['step1'] == true;
+          await next();
+        }, priority: 50);
 
-          bus.on<TestEvent>((event) async {});
-          await bus.publish(TestEvent('test'));
+        bus.on<TestEvent>((event) async {});
+        await bus.publish(TestEvent('test'));
 
-          expect(step2SawStep1, isTrue);
-        },
-      );
+        expect(step2SawStep1, isTrue);
+      });
     });
 
     group('Middleware and Handler Interaction', () {
@@ -536,7 +494,7 @@ void main() {
         var handlerCount = 0;
         var middlewareCount = 0;
 
-        bus.addMiddleware((event, next) async {
+        bus.addMiddleware((RaiserEvent event, Future<void> Function() next) async {
           middlewareCount++;
           await next();
         });
@@ -561,7 +519,7 @@ void main() {
         final bus = EventBus();
         Duration? executionTime;
 
-        bus.addMiddleware((event, next) async {
+        bus.addMiddleware((RaiserEvent event, Future<void> Function() next) async {
           final stopwatch = Stopwatch()..start();
           await next();
           stopwatch.stop();
@@ -569,7 +527,7 @@ void main() {
         });
 
         bus.on<TestEvent>((event) async {
-          await Future.delayed(Duration(milliseconds: 50));
+          await Future.delayed(const Duration(milliseconds: 50));
         });
 
         await bus.publish(TestEvent('test'));
@@ -594,7 +552,7 @@ void main() {
         final bus = EventBus();
         final logs = <String>[];
 
-        bus.addMiddleware((event, next) async {
+        bus.addMiddleware((RaiserEvent event, Future<void> Function() next) async {
           logs.add('before');
           await next();
           logs.add('after');
@@ -623,31 +581,21 @@ void main() {
         final bus = EventBus();
         final invocations = <String>[];
 
-        bus.addMiddleware((event, next) async {
+        bus.addMiddleware((RaiserEvent event, Future<void> Function() next) async {
           invocations.add('start:${(event as TestEvent).message}');
           await next();
           invocations.add('end:${(event).message}');
         });
 
         bus.on<TestEvent>((event) async {
-          await Future.delayed(Duration(milliseconds: 10));
+          await Future.delayed(const Duration(milliseconds: 10));
         });
 
-        await Future.wait([
-          bus.publish(TestEvent('A')),
-          bus.publish(TestEvent('B')),
-          bus.publish(TestEvent('C')),
-        ]);
+        await Future.wait([bus.publish(TestEvent('A')), bus.publish(TestEvent('B')), bus.publish(TestEvent('C'))]);
 
         // All events should have start and end
-        expect(
-          invocations.where((s) => s.startsWith('start:')).length,
-          equals(3),
-        );
-        expect(
-          invocations.where((s) => s.startsWith('end:')).length,
-          equals(3),
-        );
+        expect(invocations.where((s) => s.startsWith('start:')).length, equals(3));
+        expect(invocations.where((s) => s.startsWith('end:')).length, equals(3));
       });
     });
   });

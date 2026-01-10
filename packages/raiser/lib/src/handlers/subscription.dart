@@ -1,9 +1,3 @@
-/// Subscription class for managing handler registrations.
-///
-/// Represents a handler registration that can be cancelled to stop
-/// receiving events.
-library;
-
 /// Represents a handler registration that can be cancelled.
 ///
 /// When a handler is registered with the EventBus, a Subscription is
