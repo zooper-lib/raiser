@@ -3,8 +3,8 @@ name: Publish
 on:
   workflow_dispatch:
   push:
-    branches:
-      - "release/**"
+    tags:
+      - "v*.*.*"
 
 concurrency:
   group: publish-${{ github.ref }}
@@ -31,6 +31,9 @@ jobs:
 
       - name: Bootstrap
         run: melos bootstrap
+
+      - name: Analyze
+        run: melos run analyze --no-select
 
       - name: Test
         run: melos run test --no-select
