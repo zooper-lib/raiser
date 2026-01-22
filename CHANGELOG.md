@@ -9,6 +9,8 @@ This is a lockstep workspace: all packages share the same version and release no
 
 ## [Unreleased]
 
+## [3.0.1] - 2026-01-22
+
 ### Changed
 
 - Updated dependencies to use latest versions:
