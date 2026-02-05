@@ -9,6 +9,8 @@ This is a lockstep workspace: all packages share the same version and release no
 
 ## [Unreleased]
 
+## [3.0.2] - 2026-02-05
+
 ### Fixed
 
 - Fixed handler type matching to support inheritance hierarchies (sealed classes, abstract base classes).
