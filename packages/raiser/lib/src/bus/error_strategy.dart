@@ -34,6 +34,5 @@ class AggregateException implements Exception {
   AggregateException(this.errors, this.stackTraces);
 
   @override
-  String toString() =>
-      'AggregateException: ${errors.length} error${errors.length == 1 ? '' : 's'} occurred';
+  String toString() => 'AggregateException: ${errors.length} error${errors.length == 1 ? '' : 's'} occurred';
 }

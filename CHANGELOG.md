@@ -9,6 +9,15 @@ This is a lockstep workspace: all packages share the same version and release no
 
 ## [Unreleased]
 
+## [3.0.2] - 2026-02-05
+
+### Fixed
+
+- Fixed handler type matching to support inheritance hierarchies (sealed classes, abstract base classes).
+  - Handlers registered for a base class now correctly receive events of subclass types.
+  - Previously, publishing `SubclassEvent` would not trigger handlers registered for `BaseClass`.
+  - This is critical for freezed/sealed class patterns where events have multiple subtypes.
+
 ## [3.0.1] - 2026-01-22
 
 ### Changed
