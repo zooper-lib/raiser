@@ -242,6 +242,107 @@ void main() {
 
         expect(invoked, isFalse);
       });
+
+      test('handler for base class receives subclass events', () async {
+        // Verifies inheritance-aware type matching for sealed class hierarchies.
+        // A handler registered for the sealed base class should receive events
+        // from any of its subclasses.
+        final bus = EventBus();
+        final received = <BaseEvent>[];
+
+        bus.on<BaseEvent>((event) async {
+          received.add(event);
+        });
+
+        // Publish subclass events - they should be received by the base handler
+        await bus.publish(SubEventA('first'));
+        await bus.publish(SubEventB(42));
+
+        expect(received.length, equals(2));
+        expect(received[0], isA<SubEventA>());
+        expect(received[1], isA<SubEventB>());
+      });
+
+      test('handler for specific subclass ignores other subtypes', () async {
+        // A handler for a specific subclass should not receive events from
+        // sibling subclasses.
+        final bus = EventBus();
+        final receivedA = <SubEventA>[];
+        final receivedB = <SubEventB>[];
+
+        bus.on<SubEventA>((event) async {
+          receivedA.add(event);
+        });
+        bus.on<SubEventB>((event) async {
+          receivedB.add(event);
+        });
+
+        await bus.publish(SubEventA('test'));
+
+        // Only SubEventA handler should have received the event
+        expect(receivedA.length, equals(1));
+        expect(receivedB.length, equals(0));
+      });
+
+      test('both base and subclass handlers receive subclass events', () async {
+        // When handlers are registered for both base and subclass, publishing a
+        // subclass event should trigger both handlers.
+        final bus = EventBus();
+        final baseReceived = <BaseEvent>[];
+        final subReceived = <SubEventA>[];
+
+        bus.on<BaseEvent>((event) async {
+          baseReceived.add(event);
+        });
+        bus.on<SubEventA>((event) async {
+          subReceived.add(event);
+        });
+
+        await bus.publish(SubEventA('test'));
+
+        // Both handlers should receive the event
+        expect(baseReceived.length, equals(1));
+        expect(subReceived.length, equals(1));
+      });
+
+      test('handler priority works correctly with inheritance', () async {
+        // Priority ordering should work correctly when multiple handlers at
+        // different inheritance levels receive the same event.
+        final bus = EventBus();
+        final order = <String>[];
+
+        // Register handlers with explicit priorities
+        bus.on<SubEventA>((event) async {
+          order.add('sub:low');
+        }, priority: 0);
+        bus.on<BaseEvent>((event) async {
+          order.add('base:high');
+        }, priority: 10);
+        bus.on<SubEventA>((event) async {
+          order.add('sub:high');
+        }, priority: 5);
+
+        await bus.publish(SubEventA('test'));
+
+        // Should execute in priority order: base:high (10), sub:high (5), sub:low (0)
+        expect(order, equals(['base:high', 'sub:high', 'sub:low']));
+      });
+
+      test('class-based handler receives subclass events', () async {
+        // Verifies that EventHandler<BaseType> receives subclass events,
+        // matching the pattern described in the user's issue.
+        final bus = EventBus();
+        final handler = BaseEventHandler();
+
+        bus.register<BaseEvent>(handler);
+
+        await bus.publish(SubEventA('test'));
+        await bus.publish(SubEventB(123));
+
+        expect(handler.received.length, equals(2));
+        expect(handler.received[0], isA<SubEventA>());
+        expect(handler.received[1], isA<SubEventB>());
+      });
     });
 
     group('Memory and Cleanup Edge Cases', () {
@@ -385,4 +486,63 @@ final class OtherEvent implements RaiserEvent {
   final Map<String, Object?> metadata;
 
   Map<String, dynamic> toMetadataMap() => {'value': value};
+}
+
+/// Base event class for testing inheritance-aware type matching.
+///
+/// Simulates a sealed class hierarchy where handlers can be registered for
+/// the base type and receive subclass events.
+sealed class BaseEvent implements RaiserEvent {
+  const BaseEvent({required this.id, required this.occurredOn, required this.metadata});
+
+  @override
+  final EventId id;
+
+  @override
+  final DateTime occurredOn;
+
+  @override
+  final Map<String, Object?> metadata;
+}
+
+/// First subclass of [BaseEvent] for testing inheritance.
+final class SubEventA extends BaseEvent {
+  SubEventA(
+    this.value, {
+    EventId? eventId,
+    DateTime? occurredOn,
+    Map<String, Object?> metadata = const {},
+  }) : super(
+         id: eventId ?? EventId.fromUlid(),
+         occurredOn: occurredOn ?? DateTime.now(),
+         metadata: Map<String, Object?>.unmodifiable(metadata),
+       );
+
+  final String value;
+}
+
+/// Second subclass of [BaseEvent] for testing inheritance.
+final class SubEventB extends BaseEvent {
+  SubEventB(
+    this.number, {
+    EventId? eventId,
+    DateTime? occurredOn,
+    Map<String, Object?> metadata = const {},
+  }) : super(
+         id: eventId ?? EventId.fromUlid(),
+         occurredOn: occurredOn ?? DateTime.now(),
+         metadata: Map<String, Object?>.unmodifiable(metadata),
+       );
+
+  final int number;
+}
+
+/// Class-based handler for [BaseEvent] to test inheritance with register().
+class BaseEventHandler implements EventHandler<BaseEvent> {
+  final List<BaseEvent> received = [];
+
+  @override
+  Future<void> handle(BaseEvent event) async {
+    received.add(event);
+  }
 }
