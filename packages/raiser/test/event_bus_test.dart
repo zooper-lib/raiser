@@ -305,8 +305,7 @@ void main() {
         expect(
           executionOrder,
           equals(expectedOrder),
-          reason:
-              'Priorities $priorities should execute in descending priority order',
+          reason: 'Priorities $priorities should execute in descending priority order',
         );
       }
     });
@@ -343,8 +342,7 @@ void main() {
           expect(
             executionOrder,
             equals(expectedOrder),
-            reason:
-                'Equal priority handlers should execute in registration order',
+            reason: 'Equal priority handlers should execute in registration order',
           );
         }
       },

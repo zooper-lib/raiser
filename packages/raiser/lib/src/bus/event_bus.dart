@@ -14,9 +14,17 @@ typedef ErrorCallback = void Function(Object error, StackTrace stackTrace);
 typedef Middleware = Future<void> Function(dynamic event, Future<void> Function() next);
 
 /// Internal class for storing handler registrations with metadata.
-class _HandlerEntry<T> {
-  /// The handler function to invoke.
-  final Future<void> Function(T) handler;
+///
+/// Stores handlers in a type-erased manner to enable inheritance-aware
+/// type matching. The [canHandle] predicate checks if an event is assignable
+/// to the handler's expected type, and [invoke] wraps the typed handler
+/// to allow invocation with a dynamic event.
+class _HandlerEntry {
+  /// Type-erased handler invocation.
+  ///
+  /// Wraps the original typed handler and performs the cast internally.
+  /// This is safe because [canHandle] guarantees type compatibility.
+  final Future<void> Function(dynamic) invoke;
 
   /// Priority for ordering (higher = earlier execution).
   final int priority;
@@ -24,7 +32,14 @@ class _HandlerEntry<T> {
   /// Registration order for stable sorting within same priority.
   final int registrationOrder;
 
-  _HandlerEntry(this.handler, this.priority, this.registrationOrder);
+  /// Type predicate to check if an event is assignable to this handler's type.
+  ///
+  /// Uses runtime type checking to support inheritance and sealed class
+  /// hierarchies. This allows a handler registered for `BaseEvent` to receive
+  /// events of type `SubclassEvent`.
+  final bool Function(dynamic) canHandle;
+
+  _HandlerEntry(this.invoke, this.priority, this.registrationOrder, this.canHandle);
 }
 
 /// Internal class for storing middleware registrations with metadata.
@@ -66,9 +81,12 @@ class EventBus {
   /// Counter for assigning registration order to middleware.
   int _middlewareCounter = 0;
 
-  /// Type-based handler storage.
-  /// Maps runtime types to lists of handler entries.
-  final Map<Type, List<_HandlerEntry<dynamic>>> _handlers = {};
+  /// Flat list of all registered handler entries.
+  ///
+  /// We use a flat list instead of a type-keyed map to support
+  /// inheritance-aware type matching. Each entry contains a type predicate
+  /// that checks if an event is assignable to the handler's expected type.
+  final List<_HandlerEntry> _handlers = [];
 
   /// Middleware pipeline.
   final List<_MiddlewareEntry> _middleware = [];
@@ -138,14 +156,26 @@ class EventBus {
   }
 
   /// Internal method to add a handler to the registry.
+  ///
+  /// Creates a handler entry with a type predicate that uses runtime type
+  /// checking to support inheritance hierarchies (e.g., sealed classes with
+  /// multiple subclasses). The handler is wrapped in a type-erased invocation
+  /// function that performs the cast internally.
   Subscription _addHandler<T>(Future<void> Function(T) handler, int priority) {
-    final entry = _HandlerEntry<T>(handler, priority, _registrationCounter++);
+    // Create a type predicate that checks if an event is assignable to T.
+    // This enables inheritance-aware matching where a handler for BaseEvent
+    // will receive events of SubclassEvent.
+    bool canHandle(dynamic event) => event is T;
 
-    _handlers.putIfAbsent(T, () => []);
-    _handlers[T]!.add(entry);
+    // Wrap the typed handler in a type-erased function that performs the cast.
+    // This is safe because canHandle guarantees the event is of type T.
+    Future<void> invoke(dynamic event) => handler(event as T);
+
+    final entry = _HandlerEntry(invoke, priority, _registrationCounter++, canHandle);
+    _handlers.add(entry);
 
     return Subscription(() {
-      _handlers[T]?.remove(entry);
+      _handlers.remove(entry);
     });
   }
 
@@ -196,26 +226,34 @@ class EventBus {
   }
 
   /// Executes handlers for the given event.
+  ///
+  /// Uses inheritance-aware type matching to find all handlers that can
+  /// process the event. This supports sealed class hierarchies where a
+  /// handler registered for a base class receives subclass events.
   Future<void> _executeHandlers<T>(T event) async {
-    final entries = _handlers[T];
-    if (entries == null || entries.isEmpty) {
+    // Find all handlers whose type predicate matches the event.
+    // This enables inheritance: a handler for BaseEvent will match SubclassEvent.
+    final matchingEntries = _handlers.where((entry) => entry.canHandle(event)).toList();
+
+    if (matchingEntries.isEmpty) {
       return;
     }
 
     // Sort by priority (descending) then by registration order (ascending)
-    final sortedEntries = List<_HandlerEntry<dynamic>>.from(entries)
-      ..sort((a, b) {
-        final priorityCompare = b.priority.compareTo(a.priority);
-        if (priorityCompare != 0) return priorityCompare;
-        return a.registrationOrder.compareTo(b.registrationOrder);
-      });
+    matchingEntries.sort((a, b) {
+      final priorityCompare = b.priority.compareTo(a.priority);
+      if (priorityCompare != 0) return priorityCompare;
+      return a.registrationOrder.compareTo(b.registrationOrder);
+    });
 
     final errors = <Object>[];
     final stackTraces = <StackTrace>[];
 
-    for (final entry in sortedEntries) {
+    for (final entry in matchingEntries) {
       try {
-        await (entry as _HandlerEntry<T>).handler(event);
+        // The canHandle predicate guarantees the event is assignable to the
+        // handler's type, so the internal cast in invoke is safe.
+        await entry.invoke(event);
       } catch (error, stackTrace) {
         // Always invoke the error callback if configured
         onError?.call(error, stackTrace);
