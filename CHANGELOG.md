@@ -9,6 +9,10 @@ This is a lockstep workspace: all packages share the same version and release no
 
 ## [Unreleased]
 
+### Changed
+
+- Updated `bounded` dependency from `^1.0.0` to `^2.0.0`.
+
 ## [3.0.2] - 2026-02-05
 
 ### Fixed
