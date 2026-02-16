@@ -7,7 +7,7 @@ environment:
 
 dependencies:
 
-  bounded: ^1.0.0
+  bounded: ^2.0.0
 
   zooper_flutter_core: ^2.0.0
 
