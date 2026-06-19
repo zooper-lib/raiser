@@ -9,6 +9,14 @@ This is a lockstep workspace: all packages share the same version and release no
 
 ## [Unreleased]
 
+## [3.0.4] - 2026-06-19
+
+### Changed
+
+- Widened `analyzer` constraint from `>=7.0.0 <9.0.0` to `>=7.0.0 <15.0.0`, allowing `analyzer` 13.x.
+- Resolves `analyzer` 8.4.1 → 13.3.0, `_fe_analyzer_shared` 91 → 103, `dart_style` 3.1.3 → 3.1.9.
+- `analyzer` 14 is capped by `build` 4.0.6 (requires `analyzer <14.0.0`).
+
 ## [3.0.3] - 2026-02-16
 
 ### Changed
